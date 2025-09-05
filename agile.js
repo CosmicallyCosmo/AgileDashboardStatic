@@ -72,7 +72,7 @@ async function getData(period_from, period_to, initial = false) {
 }
 
 async function updateGraphs(initial = false) {
-    let day = new Date()
+    let day = new Date();
     day.setDate(day.getDate() + offset);
 
     let dt_range = londonDayToUtcRange(day);

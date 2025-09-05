@@ -117,23 +117,21 @@ export function getLondonTimeParts(utcIsoString) {
 
 export function londonDayToUtcRange(date) {
   const year = date.getFullYear();
-  const month = date.getMonth(); // 0-based
+  const month = date.getMonth();
   const day = date.getDate();
 
-  // Start of the day in London
-  const londonStart = new Date(Date.UTC(year, month, day));
   const startUtc = new Date(
-    londonStart.toLocaleString("en-US", { timeZone: "Europe/London" })
+    new Date(Date.UTC(year, month, day, 0, 0, 0))
+      .toLocaleString("en-GB", { timeZone: "Europe/London" })
   );
 
-  // Start of the next day in London (end of current day)
-  const londonEnd = new Date(Date.UTC(year, month, day + 1));
   const endUtc = new Date(
-    londonEnd.toLocaleString("en-US", { timeZone: "Europe/London" })
+    new Date(Date.UTC(year, month, day + 1, 0, 0, 0))
+      .toLocaleString("en-GB", { timeZone: "Europe/London" })
   );
 
   return {
-    startUtc: startUtc,
-    endUtc: endUtc,
+    startUtc: startUtc.toISOString(),
+    endUtc: endUtc.toISOString()
   };
-};
+}
