@@ -14,7 +14,7 @@ export function updatebar(x, y, suffix = "p", min = -20, max = 50) {
                 cmin: min,                    // min value for the color scale
                 cmax: max,                      // max value for the color scale
             },
-            hovertemplate: '%{y}<extra></extra>' 
+            hovertemplate: '%{x|%H:%M} - %{y}<extra></extra>' 
         }
         ];
     
