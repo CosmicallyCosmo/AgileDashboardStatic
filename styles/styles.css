@@ -1,0 +1,624 @@
+* {
+box-sizing: border-box;
+}
+
+body {
+  width: calc(90% - 16px);
+  margin-left: calc(5% + 8px);
+  margin-right: calc(5% + 8px);
+  font-family: Arial;
+  background: #f1f1f1;
+}
+
+.quicksand-txt {
+    font-family: "Quicksand", serif;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-style: normal;
+  }
+
+.warning-span {
+  font-variation-settings: 'FILL' 1;
+  font-size: 20px !important;
+  vertical-align: text-top;
+  color: red;
+}
+
+.tooltip 
+        {
+            position: absolute;
+            display: flex;
+            border-bottom: 2px solid black;
+        }
+    
+        .tooltip .tooltiptext 
+        {
+            visibility: hidden;
+            top: 120%;
+            right: 0;
+            max-width: 200px;    /* prevents runaway width */
+            font-size: 12px;
+            background-color: rgb(228, 226, 226);
+            color: black;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 0;
+    
+            /* Position the tooltip */
+            position: absolute;
+            z-index: 1;
+        }
+    
+        .tooltip:hover .tooltiptext 
+        {
+           visibility: visible;
+        }
+
+.topnav {
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    overflow: hidden;
+    background-color: white;
+    width: calc(40% - 16px);
+    margin-left: 30%;
+    padding-left: 16px;
+    padding-right: 16px;
+    margin-bottom: 8px;
+    margin-top: 8px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow for a cleaner look */
+    border-radius: 8px; /* Rounded corners */
+}
+
+.topnav a {
+    float: left;
+    display: block;
+    color: black;
+    text-align: center;
+    text-decoration: none;
+    font-size: 17px;
+}
+
+.topnav h1 {
+    float: left;
+    display: block;
+    color: black;
+    text-decoration: none;
+    font-size: 35px;
+}
+
+.navlink {
+    display: flex;
+    align-items: center;
+    width: 20%;
+}
+
+.logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 60%;
+
+}
+
+.navselect {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background-color: white;
+    width: calc(22% - 16px);
+    margin-left: auto;
+    padding-left: 8px;
+    padding-right: 8px;
+    margin-bottom: 8px;
+    margin-top: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow for a cleaner look */
+    border-radius: 8px; /* Rounded corners */
+}
+
+.selectn {
+    flex-grow: 1;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow for a cleaner look */
+    font-size: 15px;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+.titlecol {
+    background-color: white;
+    padding-bottom: 4px;
+    padding-top: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow for a cleaner look */
+    border-radius: 8px; /* Rounded corners */
+    justify-content: center;
+    align-items: center;
+}
+
+.titlecol h1 {
+    display: block;
+    text-align: center;
+    text-decoration: none;
+    font-size: 30px;
+}
+
+.titlecol p {
+    display: block;
+    text-align: center;
+    text-decoration: none;
+    font-size: 20px;
+}
+
+.leftbcolumn { 
+    width: 5%;
+    margin-left: calc(-5% - 8px);
+    height: min(90vh, 600px);
+}
+
+.gcolumn {
+    height: min(90vh, 600px);
+    background-color: white;
+    margin: 8px;
+    width: 100%; /* Slightly smaller divs for three items per row */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow for a cleaner look */
+    border-radius: 8px; /* Rounded corners */
+}
+
+#graphContainer .plotly .cursor-pointer {
+  cursor: default !important;
+}
+
+.rightbcolumn {   
+    float: left;
+    width: 5%;
+    margin-right: calc(-5% - 8px); 
+    height: min(90vh, 600px);
+    }
+
+.navbutton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.button {
+    display: inline-block;
+    padding: 15px 25px;
+    font-size: 24px;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    outline: none;
+    color: #8a8a8a;
+    background-color: white;
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 3px #999;
+  }
+  
+.button:hover {background-color: #cacaca}
+
+.button:active {
+background-color: 0428aa;
+box-shadow: 0 3px #b8b8b8;
+transform: translateY(1px);
+}
+
+.button:disabled {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+
+/* Clear floats after the columns */
+.row::after {
+content: "";
+display: table;
+clear: both;
+}
+
+/* Footer */
+.footer {
+    background-color: white;
+    margin-bottom: 8px;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow for a cleaner look */
+    border-radius: 8px; /* Rounded corners */
+    justify-content: center;
+    align-items: center;
+}
+
+.blockGrid {
+  display: grid;
+  margin-bottom: 8px;
+  column-gap: 30px;
+  row-gap: 10px;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  grid-auto-rows: 180px;
+}
+
+.blockGrid > div {
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow for a cleaner look */
+    border-radius: 8px; /* Rounded corners */
+    padding: 10px;
+    height: 180px;
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+}
+
+.gridDynamicItem {
+  grid-column: span 1;
+  grid-row: span 1;
+}
+
+.gridDynamicItem > p {
+    margin: 3px;
+}
+
+.gridDynamicItem > .title {
+  font-size: 18px;
+  margin: 3px;
+}
+
+.appliance {
+  display: flex;
+  flex-direction: column;
+}
+
+.appliance > .new {
+  font-size: 20px;
+  margin: 0px;
+}
+
+.appliance > p {
+  font-size: 16px;
+  margin: 5px;
+}
+
+.appliance > button {
+  background-color: #3D48BF;
+  border: none;
+  color: white;
+  padding: 10px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  border-radius: 8px;
+}
+
+.appliance > button:hover,
+.appliance > button:focus {
+  background-color: #2a8dff;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.appliance > button:disabled {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+
+ /* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content/Box */
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 30%; /* Could be more or less, depending on screen size */
+  border-radius: 16px;
+}
+
+.addApplianceButton {
+  background-color: #3D48BF;
+  border: none;
+  color: white;
+  padding: 10px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  border-radius: 8px;
+}
+
+.addApplianceButton:hover,
+.addApplianceButton:focus {
+  background-color: #2a8dff;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.addApplianceButton:disabled {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+
+
+/* The Close Button */
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+} 
+
+.titlecol p {
+    display: block;
+    text-align: center;
+    text-decoration: none;
+    font-size: 20px;
+}
+
+#cookies-eu-banner {
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow for a cleaner look */
+    border-radius: 8px; /* Rounded corners */
+    padding: 6px;
+    font-size: 13px;
+    text-align: center;
+}
+#cookies-eu-more,
+#cookies-eu-accept,
+#cookies-eu-reject {
+    text-decoration: none;
+    background-color: white;
+    color: black;
+    border: 1px solid #000;
+    cursor: pointer;
+    padding: 4px 7px;
+    margin: 2px 0;
+    font-size: 13px;
+    font-weight: bold;
+    transition: background 0.07s, color 0.07s, border-color 0.07s;
+}
+#cookies-eu-more:hover,
+#cookies-eu-more:focus,
+#cookies-eu-accept:hover,
+#cookies-eu-accept:focus {
+    background: #fff;
+    color: #222;
+}
+#cookies-eu-more {
+    margin-left: 7px;
+}
+
+#cookies-eu-reject {
+    background: none;
+    font-weight: normal;
+    color: black;
+    cursor: pointer;
+    padding: 4px 7px;
+    margin: 2px 0;
+    border: 1px solid #666;
+}
+#cookies-eu-reject:hover,
+#cookies-eu-reject:focus {
+    border-color: #fff;
+    background: #222;
+    color: #fff;
+}
+
+.faq {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background-color: white;
+    margin: auto;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow for a cleaner look */
+    border-radius: 8px; /* Rounded corners */
+    margin-bottom: 8px;
+}
+
+.faq-heading {
+  font-weight: 400;
+  font-size: 17px;
+  text-indent: 20px;
+  color: #333;
+}
+
+.faq-text {
+  font-weight: 400;
+  color: #000000;
+  width:95%;
+  padding-left:20px;
+  margin-bottom:20px;
+}
+
+.faq label {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  height: 56px;
+  padding-top:1px;
+ 
+  background-color: #FAFAFA;
+  border-bottom: 1px solid #E1E1E1;
+}
+
+.faq input[type="checkbox"] {
+  display: none;
+}
+
+.faq .faq-arrow {
+  width: 5px;
+  height: 5px;
+  transition: -webkit-transform 0.8s;
+  transition: transform 0.8s;
+  transition: transform 0.8s, -webkit-transform 0.8s;
+  /* -webkit-transition-timing-function: cubic-bezier(0.68, -0.55, 0.265, 1.55); */
+  border-top: 2px solid rgba(0, 0, 0, 0.33);
+  border-right: 2px solid rgba(0, 0, 0, 0.33);
+  float: right;
+  position: relative;
+  top: -30px;
+  right: 27px;
+  -webkit-transform: rotate(45deg);
+          transform: rotate(45deg);
+}
+
+ .faq input[type="checkbox"]:checked + label > .faq-arrow {
+  transition: -webkit-transform 0.8s;
+  transition: transform 0.8s;
+  transition: transform 0.8s, -webkit-transform 0.8s;
+  /* -webkit-transition-timing-function: cubic-bezier(0.68, -0.55, 0.265, 1.55); */
+  -webkit-transform: rotate(135deg);
+          transform: rotate(135deg);
+}
+ .faq input[type="checkbox"]:checked + label {
+  display: block;
+  background: rgba(255,255,255,255) !important;
+  color: #4f7351;
+  height: 200px;
+  transition: height 0.8s;
+  /* -webkit-transition-timing-function: cubic-bezier(0.68, -0.55, 0.265, 1.55); */
+}
+
+ .faq input[type='checkbox']:not(:checked) + label {
+  display: block;
+  transition: height 0.8s;
+  height: 55px;
+  /* -webkit-transition-timing-function: cubic-bezier(0.68, -0.55, 0.265, 1.55); */
+}
+
+.floatingControls {
+  display: none;
+  visibility: hidden;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-width: 800px) {
+    html, body {
+        width: 100%;
+        padding-left: 8px;
+        padding-right: 8px;
+        overflow-x: clip;
+        margin: 0;
+        font-family: Arial;
+        background: #f1f1f1;
+    }
+
+    .gridHeight {
+      height: 215px !important;
+    }
+
+    .hc {
+      display: none !important;
+    }
+
+    .mc {
+      margin-left: 0px !important;
+      margin-right: 0px !important;
+    }
+
+    .floatingControls {
+        display: block;
+        visibility: visible;
+        position: fixed;
+        opacity: 95%;
+        bottom: 25px;
+        right: 25px;
+        padding: 15px;
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        z-index: 1000; /* Makes sure it stays on top */
+    }
+
+    .blockGrid {
+      display: grid;
+      margin-bottom: 8px;
+      column-gap: 10px;
+      row-gap: 10px;
+      grid-auto-rows: 215px;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .eqcolumn {
+        width: 48% !important;
+    }
+
+    .modalSmall {
+      width: 50% !important;
+    }
+
+    .sms {
+        width: 60% !important;
+        margin-left: auto !important;
+    }
+    .sml {
+        width: 35% !important;
+        margin-left: 0% !important;
+    }
+    .ts {
+        font-size: 16px !important;
+    }
+  }
+
+  @media (min-width: 801px) and (max-width: 1200px) {
+    .hm {
+      display: none !important;
+      visibility: hidden !important;
+    }
+
+    .sms {
+        width: 35% !important;
+    }
+    .sml {
+        width: 60% !important;
+        margin-left: 0% !important;
+    }
+    .ts {
+        font-size: 20px !important;
+    }
+  }
