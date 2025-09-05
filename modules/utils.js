@@ -120,18 +120,21 @@ export function londonDayToUtcRange(date) {
   const month = date.getMonth();
   const day = date.getDate();
 
+  // Start of the day
+  const start = new Date(Date.UTC(year, month, day, 0, 0, 0));
   const startUtc = new Date(
-    new Date(Date.UTC(year, month, day, 0, 0, 0))
-      .toLocaleString("en-GB", { timeZone: "Europe/London" })
+    start.toLocaleString("en-GB", { timeZone: "Europe/London" })
   );
 
+  // End of the day
+  const end = new Date(start);        // copy start
+  end.setUTCDate(end.getUTCDate() + 1); // safely add 1 day
   const endUtc = new Date(
-    new Date(Date.UTC(year, month, day + 1, 0, 0, 0))
-      .toLocaleString("en-GB", { timeZone: "Europe/London" })
+    end.toLocaleString("en-GB", { timeZone: "Europe/London" })
   );
 
   return {
     startUtc: startUtc,
-    endUtc: endUtc,
+    endUtc: endUtc
   };
-}
+};
