@@ -72,14 +72,12 @@ async function getData(period_from, period_to, initial = false) {
 }
 
 async function updateGraphs(initial = false) {
-    let period_from = new Date()
-    period_from.setHours(1, 0, 0, 0);
-    let period_to = new Date(period_from.valueOf());
+    let day = new Date()
+    day.setDate(day.getDate() + offset);
 
-    period_from.setDate(period_from.getDate() + offset);
-    period_to.setDate(period_to.getDate() + 1 + offset);
+    dt_range = londonDayToUtcRange(day);
 
-    let res = await getData(period_from, period_to, initial);
+    let res = await getData(dt_range.startUtc, dt_range.endUtc, initial);
     let unit = res.map(a => a.value_inc_vat);
     let valid_from = res.map(a => a.valid_from);
 

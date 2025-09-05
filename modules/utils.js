@@ -96,7 +96,7 @@ export function toLondonISOString(utcDate) {
   return new Date(
     utcDate.toLocaleString("en-US", { timeZone: "Europe/London" })
   );
-}
+};
 
 export function getLondonTimeParts(utcIsoString) {
   const utcDate = new Date(utcIsoString);
@@ -113,4 +113,27 @@ export function getLondonTimeParts(utcIsoString) {
 
   const [hour, minute] = timeString.split(":").map(Number);
   return { hour, minute };
-}
+};
+
+function londonDayToUtcRange(date) {
+  const year = date.getFullYear();
+  const month = date.getMonth(); // 0-based
+  const day = date.getDate();
+
+  // Start of the day in London
+  const londonStart = new Date(Date.UTC(year, month, day));
+  const startUtc = new Date(
+    londonStart.toLocaleString("en-US", { timeZone: "Europe/London" })
+  );
+
+  // Start of the next day in London (end of current day)
+  const londonEnd = new Date(Date.UTC(year, month, day + 1));
+  const endUtc = new Date(
+    londonEnd.toLocaleString("en-US", { timeZone: "Europe/London" })
+  );
+
+  return {
+    startUtc: startUtc,
+    endUtc: endUtc,
+  };
+};
