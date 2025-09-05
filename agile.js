@@ -192,10 +192,11 @@ async function updateAppliance(appliance) {
         cost_para.innerHTML = `At a cost of <b>~${cost}p</b>&nbsp;<span class="material-symbols-outlined warning-span tooltip">warning<span class="tooltiptext quicksand-txt">Tomorrow's pricing hasn't<br>been released yet.<br>Check back at 16:00<br>for an updated start time!</span></span>`;
     }
     const start_para = appliance_widget.querySelector(".start");
-    const parsed_start_time = getLondonTimeParts(start_time);
+    const parsed_start_time = new Date(start_time);
+    const hour_minute = getLondonTimeParts(start_time);
     const start_day = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(parsed_start_time);
-    const hours = ("0" + parsed_start_time.getHours()).slice(-2);
-    const minutes = ("0" + parsed_start_time.getMinutes()).slice(-2);
+    const hours = ("0" + hour_minute.hour).slice(-2);
+    const minutes = ("0" + hour_minute.minute).slice(-2);
     start_para.innerHTML = `Start at <b>${start_day} ${hours}:${minutes}</b>`;
     appliance_widget.style.display = "block";
 };
