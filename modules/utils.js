@@ -115,7 +115,7 @@ export function getLondonTimeParts(utcIsoString) {
   return { hour, minute };
 };
 
-function londonDayToUtcRange(date) {
+export function londonDayToUtcRange(date) {
   const year = date.getFullYear();
   const month = date.getMonth(); // 0-based
   const day = date.getDate();

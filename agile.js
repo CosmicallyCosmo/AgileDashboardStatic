@@ -1,6 +1,6 @@
 "use strict";
 
-import { escapeHtml, validateInt, setCookie, getCookie, minMovingAverage, toLondonISOString, getLondonTimeParts } from "./modules/utils.js";
+import { escapeHtml, validateInt, setCookie, getCookie, minMovingAverage, toLondonISOString, getLondonTimeParts, londonDayToUtcRange } from "./modules/utils.js";
 import { getUnitData } from "./modules/api_methods.js";
 import { updatebar, updatekpi } from "./modules/graph.js";
 // import { } from "./modules/appliance_utils.js";
