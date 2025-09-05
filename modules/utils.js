@@ -131,7 +131,7 @@ export function londonDayToUtcRange(date) {
   );
 
   return {
-    startUtc: startUtc.toISOString(),
-    endUtc: endUtc.toISOString()
+    startUtc: startUtc,
+    endUtc: endUtc,
   };
 }
