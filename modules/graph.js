@@ -34,6 +34,12 @@ export function updatebar(x, y, suffix = "p", min = -20, max = 50) {
             text: new Date(x[0]).toLocaleDateString('en-GB', {day: 'numeric', month: 'long', year: 'numeric'}),
             font: { size: 20 }
           },
+        margin: {
+                l: 40,  // Left margin
+                r: 10,  // Right margin
+                t: 80,  // Top margin (reduce for tighter title spacing)
+                b: 40   // Bottom margin
+        },
     };
 
     var config = {
