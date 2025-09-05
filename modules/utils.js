@@ -90,3 +90,27 @@ return {
         sum: minSum,
     };
 };
+
+export function toLondonISOString(utcDate) {
+  // Convert to a Date in London time and output ISO string (still works in Plotly)
+  return new Date(
+    utcDate.toLocaleString("en-US", { timeZone: "Europe/London" })
+  ).toISOString();
+}
+
+export function getLondonTimeParts(utcIsoString) {
+  const utcDate = new Date(utcIsoString);
+
+  const formatter = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/London",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  });
+
+  // This returns something like "13:00"
+  const timeString = formatter.format(utcDate);
+
+  const [hour, minute] = timeString.split(":").map(Number);
+  return { hour, minute };
+}

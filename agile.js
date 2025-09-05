@@ -1,6 +1,6 @@
 "use strict";
 
-import { escapeHtml, validateInt, setCookie, getCookie, minMovingAverage } from "./modules/utils.js";
+import { escapeHtml, validateInt, setCookie, getCookie, minMovingAverage, toLondonISOString, getLondonTimeParts } from "./modules/utils.js";
 import { getUnitData } from "./modules/api_methods.js";
 import { updatebar, updatekpi } from "./modules/graph.js";
 // import { } from "./modules/appliance_utils.js";
@@ -87,7 +87,9 @@ async function updateGraphs(initial = false) {
     const max_price = Math.round(Math.max(...unit) * 100 + Number.EPSILON) / 100;
     const average_price = Math.round((unit.reduce((partialSum, a) => partialSum + a, 0) / unit.length) * 100 + Number.EPSILON) / 100;
 
-    updatebar(valid_from, unit);
+    let london_valid_from = valid_from.map(toLondonISOString);
+
+    updatebar(london_valid_from, unit);
     updatekpi("min", min_price, average_price, "Minimum");
     updatekpi("avg", average_price, average_price, "Average");
     updatekpi("max", max_price,average_price, "Maximum");
@@ -190,7 +192,7 @@ async function updateAppliance(appliance) {
         cost_para.innerHTML = `At a cost of <b>~${cost}p</b>&nbsp;<span class="material-symbols-outlined warning-span tooltip">warning<span class="tooltiptext quicksand-txt">Tomorrow's pricing hasn't<br>been released yet.<br>Check back at 16:00<br>for an updated start time!</span></span>`;
     }
     const start_para = appliance_widget.querySelector(".start");
-    const parsed_start_time = new Date(start_time);
+    const parsed_start_time = getLondonTimeParts(start_time);
     const start_day = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(parsed_start_time);
     const hours = ("0" + parsed_start_time.getHours()).slice(-2);
     const minutes = ("0" + parsed_start_time.getMinutes()).slice(-2);
