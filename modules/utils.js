@@ -95,7 +95,7 @@ export function toLondonISOString(utcDate) {
   // Convert to a Date in London time and output ISO string (still works in Plotly)
   return new Date(
     utcDate.toLocaleString("en-US", { timeZone: "Europe/London" })
-  ).toISOString();
+  );
 }
 
 export function getLondonTimeParts(utcIsoString) {
