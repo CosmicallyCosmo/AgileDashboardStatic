@@ -57,7 +57,7 @@ async function getData(period_from, period_to, initial = false) {
     if (initial)
         max = 1;
     let res = await db[region].where("valid_from").between(period_from.toISOString(), period_to.toISOString(), true, false).toArray();
-    if (res.length !== 48 && !((period_from > today) && res.length >= 40)) { // deal with next day?
+    if (res.length !== 48 && !((period_from >= today) && res.length >= 40)) {
         let new_period_from = new Date(period_from.valueOf());
         new_period_from.setDate(period_from.getDate() - max + offset);
         let new_period_to = new Date(period_to.valueOf());
