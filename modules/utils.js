@@ -1,5 +1,7 @@
 "use strict";
 
+import { Temporal } from 'https://cdn.skypack.dev/@js-temporal/polyfill';
+
 var entityMap = {
   '&': '&amp;',
   '<': '&lt;',
@@ -115,26 +117,26 @@ export function getLondonTimeParts(utcIsoString) {
   return { hour, minute };
 };
 
-export function londonDayToUtcRange(date) {
-  const year = date.getFullYear();
-  const month = date.getMonth();
-  const day = date.getDate();
+export function getLondonDayRangeAsDate(offset = 0) {
+  const londonZone = 'Europe/London';
 
-  // Start of the day
-  const start = new Date(Date.UTC(year, month, day, 0, 0, 0));
-  const startUtc = new Date(
-    start.toLocaleString("en-GB", { timeZone: "Europe/London" })
-  );
+  // Get today in London
+  let londonDate = Temporal.Now.plainDateISO(londonZone);
 
-  // End of the day
-  const end = new Date(start);        // copy start
-  end.setUTCDate(end.getUTCDate() + 1); // safely add 1 day
-  const endUtc = new Date(
-    end.toLocaleString("en-GB", { timeZone: "Europe/London" })
-  );
+  // Apply offset
+  londonDate = londonDate.add({ days: offset });
 
+  // Start of day in London
+  const startZoned = londonDate.toPlainDateTime({ hour: 0, minute: 0, second: 0 })
+                               .toZonedDateTime(londonZone);
+
+  // End of day in London (exclusive)
+  const endZoned = londonDate.add({ days: 1 }).toPlainDateTime({ hour: 0, minute: 0, second: 0 })
+                               .toZonedDateTime(londonZone);
+
+  // Convert to Date objects
   return {
-    startUtc: startUtc,
-    endUtc: endUtc
+    start: startZoned.toInstant().toDate(),
+    end: endZoned.toInstant().toDate(),
   };
-};
+}

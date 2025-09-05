@@ -1,6 +1,6 @@
 "use strict";
 
-import { escapeHtml, validateInt, setCookie, getCookie, minMovingAverage, toLondonISOString, getLondonTimeParts, londonDayToUtcRange } from "./modules/utils.js";
+import { escapeHtml, validateInt, setCookie, getCookie, minMovingAverage, toLondonISOString, getLondonTimeParts, getLondonDayRangeAsDate } from "./modules/utils.js";
 import { getUnitData } from "./modules/api_methods.js";
 import { updatebar, updatekpi } from "./modules/graph.js";
 // import { } from "./modules/appliance_utils.js";
@@ -72,12 +72,9 @@ async function getData(period_from, period_to, initial = false) {
 }
 
 async function updateGraphs(initial = false) {
-    let day = new Date();
-    day.setDate(day.getDate() + offset);
+    let dt_range = getLondonDayRangeAsDate(offset);
 
-    let dt_range = londonDayToUtcRange(day);
-
-    let res = await getData(dt_range.startUtc, dt_range.endUtc, initial);
+    let res = await getData(dt_range.start, dt_range.end, initial);
     let unit = res.map(a => a.value_inc_vat);
     let valid_from = res.map(a => a.valid_from);
 
