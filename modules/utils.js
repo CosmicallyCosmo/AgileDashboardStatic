@@ -134,9 +134,8 @@ export function getLondonDayRangeAsDate(offset = 0) {
   const endZoned = londonDate.add({ days: 1 }).toPlainDateTime({ hour: 0, minute: 0, second: 0 })
                                .toZonedDateTime(londonZone);
 
-  // Convert to Date objects
-  return {
-    start: startZoned.toInstant().toDate(),
-    end: endZoned.toInstant().toDate(),
-  };
+  const start = new Date(startZoned.toInstant().epochMilliseconds);
+  const end = new Date(endZoned.toInstant().epochMilliseconds);
+
+  return { start, end };
 }
