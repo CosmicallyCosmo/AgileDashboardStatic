@@ -75,7 +75,7 @@ async function updateGraphs(initial = false) {
     let day = new Date()
     day.setDate(day.getDate() + offset);
 
-    dt_range = londonDayToUtcRange(day);
+    let dt_range = londonDayToUtcRange(day);
 
     let res = await getData(dt_range.startUtc, dt_range.endUtc, initial);
     let unit = res.map(a => a.value_inc_vat);
