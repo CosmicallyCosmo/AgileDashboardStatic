@@ -304,6 +304,7 @@ function newAppliance() {
             right.addEventListener("click", () => { buttonCb('right') });
         if (right_floating)
             right_floating.addEventListener("click", () => { buttonCb('right') });
+
         document.getElementById("region")!.addEventListener("change", async(event) => {
             region = ((event.target as HTMLInputElement)!).value;
             setCookie("region", ((event.target as HTMLInputElement)!).value, 365);
@@ -312,7 +313,7 @@ function newAppliance() {
 
             let dt_range = getLondonDayRangeAsDate(0);
             await getData(dt_range.start, dt_range.end, true); // needed for appliance calcs
-            await updateGraphs(true);
+            await updateGraphs();
             
             for (let appliance of appliances) {
                 gather_futs.push(updateAppliance(appliance));
