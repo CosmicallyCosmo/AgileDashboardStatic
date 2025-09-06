@@ -65,9 +65,9 @@ async function buttonCb(id: string) {
 
 async function getData(period_from: Date, period_to: Date, initial = false) {
     const t = new Date();
-    const td = t.getDate();
+    const td = t.getTime();
     const th = t.getHours();
-    const pd = period_from.getDate();
+    const pd = period_from.getTime();
     let max = 30;
     if (initial)
         max = 1;
@@ -76,7 +76,7 @@ async function getData(period_from: Date, period_to: Date, initial = false) {
     if (res.length !== 48 && !((pd == td) && res.length >= 40) && !((pd > td) && th >= 16)) {
         let new_period_from = new Date(period_from.valueOf());
         new_period_from.setDate(period_from.getDate() - max + offset);
-        let new_period_to = new Date(period_to.valueOf());
+        let new_period_to = new Date(period_to.valueOf() + offset);
         if (initial)
             new_period_to.setDate(new_period_to.getDate() + 1);
         res = (await getUnitData(region, new_period_from, new_period_to)).results;
@@ -91,7 +91,6 @@ async function getData(period_from: Date, period_to: Date, initial = false) {
 
 async function updateGraphs(initial = false) {
     let dt_range = getLondonDayRangeAsDate(offset);
-
     let res = await getData(dt_range.start, dt_range.end, initial);
     // @ts-ignore
     let unit = res.map(a => a.value_inc_vat);
