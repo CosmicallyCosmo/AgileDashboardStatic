@@ -12,14 +12,14 @@ body {
 
 @font-face {
   font-family: 'Quicksand';
-  src: url('../fonts/Quicksand-VariableFont_wght.tff') format('truetype');
+  src: url('../fonts/quicksand.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
 }
 
 .quicksand-txt {
     font-family: "Quicksand", serif;
     font-optical-sizing: auto;
-    font-weight: 500;
-    font-style: normal;
   }
 
 .warning-span {

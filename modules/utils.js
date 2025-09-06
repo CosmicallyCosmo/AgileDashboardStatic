@@ -1,7 +1,5 @@
 "use strict";
 
-import { Temporal } from 'https://cdn.jsdelivr.net/npm/@js-temporal/polyfill@0.5.1/dist/index.umd.min.js';
-
 var entityMap = {
   '&': '&amp;',
   '<': '&lt;',
