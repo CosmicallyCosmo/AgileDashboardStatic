@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="View current and future Agile Octopus tariff rates for your region.">
+    <title>Agile Dashboard</title>
+    <link rel="canonical" href="http://www.agiledashboard.co.uk/">
+    <script defer src="/packages/cookies-eu-banner.min.js"></script>
+    <script defer src="/packages/plotly-custom.min.js"></script>
+    <script defer type="module" src="/src/index.ts?v=11"></script>
+    <link rel="stylesheet" href="/styles/styles.css?v=11">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=warning" as="style">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=warning"/>
+  </head>
+  <body>
+    <div id="cookies-eu-banner" style="display: none;">
+      By continuing to use this site, you accept the use of a cookie to store your region and local storage for storing your user data.
+      <button id="cookies-eu-reject">Reject</button>
+      <button id="cookies-eu-accept">Accept</button>
+    </div>
+    <div style="display: flex;">
+      <div class="topnav sml" id="mytopnav">
+        <div class="navlink hc" style="justify-content: left;"><a href="https://www.cosmicallycosmo.com/linkedin">About me</a></div>
+        <div class="logo"><h1 class="ts quicksand-txt">Agile Dashboard</h1></div>
+        <div class="navlink hc" style="justify-content: right;"><a href="https://ko-fi.com/agiledashboard">Blog</a></div>
+      </div>
+      <div class="navselect sms">
+        <label for="region" class="sr-only">Choose a region:</label>
+        <select class="selectn" id="region" name="region" autocomplete="off">
+          <option value="" selected hidden></option>
+          <option value="A">Eastern England</option>
+          <option value="B">East Midlands</option>
+          <option value="C">London</option>
+          <option value="D">Merseyside & Northern Wales</option>
+          <option value="E">West Midlands</option>
+          <option value="F">North Eastern England</option>
+          <option value="G">North Western England</option>
+          <option value="H">Southern England</option>
+          <option value="J">South Eastern England</option>
+          <option value="K">Southern Wales</option>
+          <option value="L">South Western England</option>
+          <option value="M">Yorkshire</option>
+          <option value="N">Southern Scotland</option>
+          <option value="P">Northern Scotland</option>
+        </select>
+      </div>
+    </div>
+    <div>
+      <div class="titlecol">
+        <div><h1 class="quicksand-txt">Daily Agile Octopus prices</h1></div>
+        <div><p>View the latest agile prices in your region below, including indicators on current price trends.</p></div>
+      </div>
+    </div>
+    <div style="display: flex;">
+      <div class="leftbcolumn navbutton hc"><button id="left" class="button">&lt;</button></div>
+      <div class="gcolumn mc" id="graphContainer"></div>
+      <div class="rightbcolumn navbutton hc"><button id="right" class="button">&gt;</button></div>
+    </div>
+    <div class="floatingControls">
+      <button id="left-floating" class="button">&lt;</button>
+      <button id="right-floating" class="button">&gt;</button>
+    </div>
+    <div class= "blockGrid" id="dynamicBlockGrid">
+      <div class="appliance gridHeight">
+        <p class="quicksand-txt new"><b>New!</b><p>
+        <p class="quicksand-txt">Add a widget to view the cheapest time to run various household appliances.</p>
+        <button id="newAppliance">Add new appliance</button>
+      </div>
+      <div class="gridHeight" id="min"></div>
+      <div class="gridHeight" id="avg"></div>
+      <div class="gridHeight" id="max"></div>
+    </div>
+    <div id="newApplianceModal" class="modal">
+      <div class="modal-content modalSmall">
+        <span class="close" id="closeModal">&times;</span>
+        <!-- Would be nice to have some easy default values for common appliances -->
+        <label for="appName" class="quicksand-txt">Appliance name </label><br>
+        <input type="text" id="appName" name="appName" value="Tumble dryer" class="quicksand-txt"><br>
+        <label for="appPower" class="quicksand-txt">Appliance average power utilisation (W)</label><br>
+        <input type="number" id="appPower" name="appPower" class="quicksand-txt" value="2500" min="0" max="20000" step="500"/><br>
+        <label for="appRunHours" class="quicksand-txt">Appliance run time (hours)</label><br>
+        <input type="number" id="appRunHours" name="appRunHours" class="quicksand-txt" value="2" min="0" max="16" step="1"/><br>
+        <label for="appRunMinutes" class="quicksand-txt">Appliance run time (minutes)</label><br>
+        <input type="number" id="appRunMinutes" name="appRunMinutes" class="quicksand-txt" value="0" min="0" max="59" step="15"/><br>
+        <input type="button" id="addApplianceButton" class = "addApplianceButton quicksand-txt" value="Add appliance">
+        <p style="color: red; display: none" id="applianceErr">Error: invalid form parameters - please double check!</p>
+      </div>
+    </div>
+    <div class='faq'>
+      <input id='faq-a' type='checkbox'>
+      <label for='faq-a'>
+        <p class="faq-heading quicksand-txt">What is Agile Octopus?</p>
+        <div class='faq-arrow'></div>
+          <p class="faq-text">Agile Octopus is an innovative smart tariff that features half hourly pricing directly tied to the wholesale energy rates. For more information and to sign up, go to <a href="https://octopus.energy/smart/agile/">Octopus Energy</a>.</p>
+      </label>
+      <input id='faq-b' type='checkbox'>
+      <label for='faq-b'>
+        <p class="faq-heading quicksand-txt">How do I know if agile is right for me?</p>
+        <div class='faq-arrow'></div>
+          <p class="faq-text">You should start by using our site to see if the average pricing is lower than your regular tariff, and if you're able to shift your electricity usage to times when the prices are lower - commonly at night. Octopus energy also offer a variety of comparsion tools and we hope to expand our functionality in the future!</p>
+      </label>
+      <input id='faq-c' type='checkbox'>
+      <label for='faq-c'>
+        <p class="faq-heading quicksand-txt">Why do the rates only go to tomorrow?</p>
+        <div class='faq-arrow'></div>
+          <p class="faq-text">While there aren't any official metrics published by Octopus Energy beyond the next day, weather patterns and the carbon intensity of the grid sometimes correlate with prices. <a href="https://grid.iamkate.com">This grid analysis</a> site can be used to see the current state of the UK electricity grid.</p>
+      </label>
+      <input id='faq-d' type='checkbox'>
+      <label for='faq-d'>
+        <p class="faq-heading quicksand-txt">When do tomorrow's prices release?</p>
+        <div class='faq-arrow'></div>
+          <p class="faq-text">The next day's prices usually release at 16:00. The website will automatically sync at that time to serve you the most up to date prices.</p>
+      </label>
+      <input id='faq-e' type='checkbox'>
+      <label for='faq-e'>
+        <p class="faq-heading quicksand-txt">I love the site - how can I donate?</p>
+        <div class='faq-arrow'></div>
+          <p class="faq-text">Thanks! We accept donations to cover the cost of hosting, please take a look here to see how to <a href="https://ko-fi.com/agiledashboard"> donate</a>.</p>
+      </label>
+    </div>
+    <div class="footer quicksand-txt">
+      <p>Always verify the content produced by this website, we are not liable financially or otherwise for misleading or incorrect data.<br>© William Anderson 2025. This site is a work in progress - more features are coming! We are not affiliated with Octopus Energy in any way.</p>
+    </div>
+  </body>
+</html>
