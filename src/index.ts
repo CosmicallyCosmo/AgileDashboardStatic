@@ -1,7 +1,7 @@
 "use strict";
 
 import { Dexie } from 'dexie';
-
+declare const CookiesEuBanner: any;
 
 import { escapeHtml, validateInt, setCookie, getCookie, minMovingAverage, toLondonISOString, getLondonTimeParts, getLondonDayRangeAsDate } from "./components/utils.js";
 import { getUnitData } from "./components/api_methods.js";
@@ -32,7 +32,7 @@ db.version(1).stores(storesDef);
 async function getNextAvailable() {
     let today = new Date();
     // @ts-ignore
-    let last_date = new Date(await (db[region].orderBy("valid_from").last()).valid_from);
+    let last_date = new Date((await db[region].orderBy("valid_from").last()).valid_from);
     return (last_date.getDate() > today.getDate());
 };
 
@@ -186,7 +186,6 @@ async function updateAppliance(appliance: any) {
 
     // @ts-ignore
     let res = await db[region].where("valid_from").above(period_from.toISOString()).toArray();
-    console.log(period_from, res);
 
     // @ts-ignore
     let unit = res.map(a => a.value_inc_vat);
@@ -205,7 +204,6 @@ async function updateAppliance(appliance: any) {
     const delay_start_para= appliance_widget.querySelector(".delayStart")!;
     delay_start_para.innerHTML = `(A delay start of ${delay_start})`;
     const cost_para = appliance_widget.querySelector(".cost")!;
-    console.log(next_available);
     if (next_available) {
         cost_para.innerHTML = `At a cost of <b>${cost}p</b>`;
     } else {
@@ -243,8 +241,7 @@ async function addAppliance(new_appliance: any = null) {
             };
 
         appliances.push(new_appliance);
-        
-        // @ts-ignore
+
         new CookiesEuBanner(function () {
             localStorage.setItem("appliances", JSON.stringify(appliances));
         });
@@ -273,7 +270,6 @@ function newAppliance() {
         
         region = getCookie("region", "A");
 
-        // @ts-ignore
         new CookiesEuBanner(function () {
             appliances = JSON.parse(localStorage.getItem("appliances")!) || appliances;
         });
