@@ -1,6 +1,6 @@
 "use strict";
 
-import { Temporal } from '@temporal';
+import { Temporal } from '@js-temporal/polyfill';
 
 var entityMap = {
   '&': '&amp;',
