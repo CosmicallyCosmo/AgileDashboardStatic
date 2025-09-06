@@ -267,70 +267,70 @@ function newAppliance() {
 
 (async() => {
 
-    document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", async function () {
         ((document.getElementById("region") as HTMLInputElement)!).value = getCookie("region", "A");
-    });
+        
+        next_available = (await getNextAvailable());
+        if ( !(next_available) ){
+            if (right)
+                right.disabled = true;
+            if (right_floating)
+                right_floating.disabled = true;
+        };
 
-    next_available = (await getNextAvailable());
-    if ( !(next_available) ){
-        if (right)
-            right.disabled = true;
-        if (right_floating)
-            right_floating.disabled = true;
-    };
+        region = getCookie("region", "A");
 
-    region = getCookie("region", "A");
-
-    // @ts-ignore
-    new CookiesEuBanner(function () {
-        appliances = JSON.parse(localStorage.getItem("appliances")!) || appliances;
-    });
-    
-    let gather_futs: Promise<void>[] = [];
-
-    await updateGraphs(true);
-
-    for (let appliance of appliances) {
-        gather_futs.push(addAppliance(appliance));
-    };
-
-    if (appliances.length > 7) {
-    ((document.getElementById("newAppliance") as HTMLInputElement)!).disabled = true;
-    };
-
-    await Promise.all(gather_futs);
-
-    if (left)
-        left.addEventListener("click", () => { buttonCb('left') });
-    if (left_floating)
-        left_floating.addEventListener("click", () => { buttonCb('left') });
-    if (right)
-        right.addEventListener("click", () => { buttonCb('right') });
-    if (right_floating)
-        right_floating.addEventListener("click", () => { buttonCb('right') });
-    document.getElementById("region")!.addEventListener("change", async(event) => {
-        region = ((event.target as HTMLInputElement)!).value;
-        setCookie("region", ((event.target as HTMLInputElement)!).value, 365);
-
+        // @ts-ignore
+        new CookiesEuBanner(function () {
+            appliances = JSON.parse(localStorage.getItem("appliances")!) || appliances;
+        });
+        
         let gather_futs: Promise<void>[] = [];
 
         await updateGraphs(true);
-        
+
         for (let appliance of appliances) {
-            gather_futs.push(updateAppliance(appliance));
+            gather_futs.push(addAppliance(appliance));
+        };
+
+        if (appliances.length > 7) {
+        ((document.getElementById("newAppliance") as HTMLInputElement)!).disabled = true;
         };
 
         await Promise.all(gather_futs);
-      });
 
-    (document.getElementById("newAppliance")!).addEventListener("click", () => { newAppliance() });
-    (document.getElementById("addApplianceButton")!).addEventListener("click", () => { addAppliance() }); 
-    (document.getElementById("closeModal")!).addEventListener("click", () => { closeApplianceModal() });
-    
-    // When the user clicks anywhere outside of the modal, close it
-    window.onclick = function(event) {
-        if (event.target == modal) {
-            modal.style.display = "none";
-        }
-    } 
+        if (left)
+            left.addEventListener("click", () => { buttonCb('left') });
+        if (left_floating)
+            left_floating.addEventListener("click", () => { buttonCb('left') });
+        if (right)
+            right.addEventListener("click", () => { buttonCb('right') });
+        if (right_floating)
+            right_floating.addEventListener("click", () => { buttonCb('right') });
+        document.getElementById("region")!.addEventListener("change", async(event) => {
+            region = ((event.target as HTMLInputElement)!).value;
+            setCookie("region", ((event.target as HTMLInputElement)!).value, 365);
+
+            let gather_futs: Promise<void>[] = [];
+
+            await updateGraphs(true);
+            
+            for (let appliance of appliances) {
+                gather_futs.push(updateAppliance(appliance));
+            };
+
+            await Promise.all(gather_futs);
+        });
+
+        (document.getElementById("newAppliance")!).addEventListener("click", () => { newAppliance() });
+        (document.getElementById("addApplianceButton")!).addEventListener("click", () => { addAppliance() }); 
+        (document.getElementById("closeModal")!).addEventListener("click", () => { closeApplianceModal() });
+        
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        } 
+    });
   })()
