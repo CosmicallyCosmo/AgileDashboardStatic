@@ -161,10 +161,10 @@ function calculateApplianceDelayStart(startISODatetime) {
 
 async function updateAppliance(appliance) {
     let period_from = new Date();
-    period_from.setHours(period_from.getHours() + 1);
     const intervals = appliance.hours * 2 + Math.ceil(appliance.minutes / 30);
 
     let res = await db[region].where("valid_from").above(period_from.toISOString()).toArray();
+    console.log(period_from, res);
 
     let unit = res.map(a => a.value_inc_vat);
     let valid_from = res.map(a => a.valid_from);

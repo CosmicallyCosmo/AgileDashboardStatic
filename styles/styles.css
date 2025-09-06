@@ -10,6 +10,11 @@ body {
   background: #f1f1f1;
 }
 
+@font-face {
+  font-family: 'Quicksand';
+  src: url('fonts/Quicksand-VariableFont_wght.tff') format('truetype');
+}
+
 .quicksand-txt {
     font-family: "Quicksand", serif;
     font-optical-sizing: auto;
