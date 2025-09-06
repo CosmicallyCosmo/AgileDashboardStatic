@@ -48,7 +48,9 @@ async function buttonCb(id) {
         document.getElementById("right-floating").disabled = false;
     };
 
+    document.getElementById("left").disabled = true;
     await updateGraphs();
+    document.getElementById("left").disabled = false;
 };
 
 async function getData(period_from, period_to, initial = false) {
