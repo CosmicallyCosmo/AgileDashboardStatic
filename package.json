@@ -1,0 +1,24 @@
+{
+  "name": "agiledashboardstatic",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CosmicallyCosmo/AgileDashboardStatic.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CosmicallyCosmo/AgileDashboardStatic/issues"
+  },
+  "homepage": "https://github.com/CosmicallyCosmo/AgileDashboardStatic#readme",
+  "dependencies": {
+    "typescript": "^5.9.2"
+  }
+}
+
