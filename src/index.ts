@@ -313,6 +313,8 @@ function newAppliance() {
 
             let gather_futs: Promise<void>[] = [];
 
+            let dt_range = getLondonDayRangeAsDate(0);
+            await getData(dt_range.start, dt_range.end, true); // needed for appliance calcs
             await updateGraphs(true);
             
             for (let appliance of appliances) {
