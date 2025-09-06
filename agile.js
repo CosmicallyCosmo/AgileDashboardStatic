@@ -61,7 +61,7 @@ async function getData(period_from, period_to, initial = false) {
         let new_period_from = new Date(period_from.valueOf());
         new_period_from.setDate(period_from.getDate() - max + offset);
         let new_period_to = new Date(period_to.valueOf());
-        if (initial)
+        if (initial && today.getHours() >= 16)
             new_period_to.setDate(new_period_to.getDate() + 1);
         res = (await getUnitData(region, new_period_from, new_period_to)).results;
         res = db[region].bulkPut(res).then(() => {
