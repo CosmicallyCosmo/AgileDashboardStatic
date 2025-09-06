@@ -1,7 +1,7 @@
 "use strict";
 
 // @ts-ignore
-import * as Plotly from "../packages/plotly-custom.min.js";
+import * as Plotly from '../packages/plotly-custom.min.js';
 
 import { normalize, getJetColor } from "./utils.js";
 

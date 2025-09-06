@@ -1,6 +1,6 @@
 "use strict";
 
-import Dexie from "dexie";
+import { Dexie } from 'dexie';
 
 
 import { escapeHtml, validateInt, setCookie, getCookie, minMovingAverage, toLondonISOString, getLondonTimeParts, getLondonDayRangeAsDate } from "./components/utils.js";
