@@ -32,8 +32,8 @@ db.version(1).stores(storesDef);
 async function getNextAvailable() {
     let today = new Date();
     // @ts-ignore
-    let last_date = new Date(await db[region].orderBy("valid_from").last());
-    return (last_date.toDateString() > today.toDateString());
+    let last_date = new Date(await (db[region].orderBy("valid_from").last()).valid_from);
+    return (last_date.getDate() > today.getDate());
 };
 
 async function buttonCb(id: string) {
@@ -268,15 +268,8 @@ function newAppliance() {
 (async() => {
 
     document.addEventListener("DOMContentLoaded", async function () {
-        ((document.getElementById("region") as HTMLInputElement)!).value = getCookie("region", "A")
-        next_available = (await getNextAvailable());
-        if ( !(next_available) ){
-            if (right)
-                right.disabled = true;
-            if (right_floating)
-                right_floating.disabled = true;
-        };
-
+        ((document.getElementById("region") as HTMLInputElement)!).value = getCookie("region", "A");
+        
         region = getCookie("region", "A");
 
         // @ts-ignore
@@ -287,6 +280,14 @@ function newAppliance() {
         let gather_futs: Promise<void>[] = [];
 
         await updateGraphs(true);
+
+        next_available = (await getNextAvailable());
+        if ( (next_available) ){
+            if (right)
+                right.disabled = false;
+            if (right_floating)
+                right_floating.disabled = false;
+        };
 
         for (let appliance of appliances) {
             gather_futs.push(addAppliance(appliance));
