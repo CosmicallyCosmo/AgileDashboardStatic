@@ -251,11 +251,6 @@ function newAppliance() {
         document.getElementById("region").value = getCookie("region", "A");
     });
 
-    if ( !(next_available) ){
-        document.getElementById("right").disabled = true;
-        document.getElementById("right-floating").disabled = true;
-    };
-
     region = getCookie("region", "A");
 
     new CookiesEuBanner(function () {
@@ -276,6 +271,11 @@ function newAppliance() {
 
     await Promise.all(gather_futs);
     next_available = (await getNextAvailable());
+
+    if (next_available) {
+        document.getElementById("right").disabled = false;
+        document.getElementById("right-floating").disabled = false;
+    };
 
     document.getElementById("left").addEventListener("click", () => { buttonCb('left') });
     document.getElementById("right").addEventListener("click", () => { buttonCb('right') });
