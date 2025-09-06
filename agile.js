@@ -69,7 +69,7 @@ async function getData(period_from, period_to, initial = false) {
         if (initial)
             new_period_to.setDate(new_period_to.getDate() + 1);
         res = (await getUnitData(region, new_period_from, new_period_to)).results;
-        res = db[region].bulkPut(res).then(() => {
+        res = await db[region].bulkPut(res).then(() => {
            return db[region].where("valid_from").between(period_from.toISOString(), period_to.toISOString(), true, false).toArray();
         });
     };
