@@ -24,7 +24,7 @@ db.version(1).stores(storesDef);
 
 async function getNextAvailable() {
     let today = new Date();
-    let last_date = new Date(await db[region].orderBy("valid_from").last());
+    let last_date = new Date((await db[region].orderBy("valid_from").last()).valid_from);
     return (last_date.getDate() > today.getDate());
 };
 
