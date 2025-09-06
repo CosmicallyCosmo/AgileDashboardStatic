@@ -1,6 +1,6 @@
 "use strict";
 
-import { Temporal } from '@js-temporal/polyfill';
+import { Temporal } from 'https://cdn.skypack.dev/@js-temporal/polyfill';
 
 var entityMap = {
   '&': '&amp;',
