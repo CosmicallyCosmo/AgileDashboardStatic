@@ -251,7 +251,6 @@ function newAppliance() {
         document.getElementById("region").value = getCookie("region", "A");
     });
 
-    next_available = (await getNextAvailable());
     if ( !(next_available) ){
         document.getElementById("right").disabled = true;
         document.getElementById("right-floating").disabled = true;
@@ -276,6 +275,7 @@ function newAppliance() {
     };
 
     await Promise.all(gather_futs);
+    next_available = (await getNextAvailable());
 
     document.getElementById("left").addEventListener("click", () => { buttonCb('left') });
     document.getElementById("right").addEventListener("click", () => { buttonCb('right') });
