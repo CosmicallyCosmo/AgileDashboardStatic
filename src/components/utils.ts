@@ -2,6 +2,7 @@
 
 import { Temporal } from '@js-temporal/polyfill';
 import * as d3 from "d3";
+declare const CookiesEuBanner: any;
 
 var entityMap = {
   '&': '&amp;',
@@ -36,7 +37,6 @@ export function getJetColor(value: number) {
 }
 
 export function setCookie(cname: any, cvalue: any, exdays: number) {
-    // @ts-ignore
     new CookiesEuBanner(function () {
         const d = new Date();
         d.setTime(d.getTime() + (exdays*24*60*60*1000));
