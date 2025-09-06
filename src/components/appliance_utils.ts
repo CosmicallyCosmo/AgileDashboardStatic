@@ -1,12 +1,12 @@
 "use strict";
 
-export function calculateApplianceCost(appliance, avg_cost) {
+export function calculateApplianceCost(appliance: any, avg_cost: number) {
     let cost = avg_cost * (appliance.power / 1000) * (appliance.hours + (appliance.minutes / 60));
     cost = Math.round(cost * 10 + Number.EPSILON) / 10;
     return cost;
 };
 
-export function calculateApplianceDelayStart(startISODatetime) {
+export function calculateApplianceDelayStart(startISODatetime: string) {
     const currentDatetime = new Date();
     const startDatetime = new Date(startISODatetime);
     let diff = startDatetime.getTime() - currentDatetime.getTime();

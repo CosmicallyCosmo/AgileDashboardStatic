@@ -1,56 +1,51 @@
 "use strict";
 
-import { Temporal } from 'https://cdn.skypack.dev/@js-temporal/polyfill';
+import { Temporal } from '@js-temporal/polyfill';
+import * as d3 from "d3";
 
 var entityMap = {
   '&': '&amp;',
   '<': '&lt;',
   '>': '&gt;',
   '"': '&quot;',
-  "'": '&#39;',
-  '/': '&#x2F;',
-  '`': '&#x60;',
-  '=': '&#x3D;'
 };
 
-function isEmpty(obj) {
-    return Object.keys(obj).length === 0;
-}
-
-export function escapeHtml(string) {
-  return String(string).replace(/[&<>"'`=\/]/g, function (s) {
+export function escapeHtml(str: string) {
+  return String(str).replace(/[&<>"'`=\/]/g, function (s: string) {
+    // @ts-ignore
     return entityMap[s];
   });
 }
 
-export function validateInt(string, min, max) {
-    const parsed_int = parseInt(string);
+export function validateInt(str: string, min: number, max: number) {
+    const parsed_int = parseInt(str);
     if  (min <= parsed_int && parsed_int <= max) {
         return parsed_int;
     }
     return -1;
 };
 
-export function normalize(value, min, max) {
+export function normalize(value: number, min:  number, max: number) {
     return (value - min) / (max - min);
 }
 
-export function getJetColor(value) {
+export function getJetColor(value: number) {
     const normValue = Math.max(0, Math.min(1, value)); // Ensure it's clamped between 0 and 1
     var colorScale = d3.scaleSequential(d3.interpolateTurbo);
     return colorScale(normValue);
 }
 
-export function setCookie(cname, cvalue, exdays) {
+export function setCookie(cname: any, cvalue: any, exdays: number) {
+    // @ts-ignore
     new CookiesEuBanner(function () {
         const d = new Date();
         d.setTime(d.getTime() + (exdays*24*60*60*1000));
         let expires = "expires="+ d.toUTCString();
-        document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+        document.cookie = `${cname}=${cvalue};${expires};path=/`;
     })
   }
 
-export function getCookie(cname, def) {
+export function getCookie(cname: any, def: any) {
     let name = cname + "=";
     let decodedCookie = decodeURIComponent(document.cookie);
     let ca = decodedCookie.split(';');
@@ -66,7 +61,7 @@ export function getCookie(cname, def) {
     return def;
 }
 
-export function minMovingAverage(unit, intervals) {
+export function minMovingAverage(unit: number[], intervals: number) {
     // if (n > prices.length) return null; // not enough data
 
     // Sum of first block
@@ -93,14 +88,14 @@ return {
     };
 };
 
-export function toLondonISOString(utcDate) {
+export function toLondonISOString(utcDate: Date) {
   // Convert to a Date in London time and output ISO string (still works in Plotly)
   return new Date(
     utcDate.toLocaleString("en-US", { timeZone: "Europe/London" })
   );
 };
 
-export function getLondonTimeParts(utcIsoString) {
+export function getLondonTimeParts(utcIsoString: string) {
   const utcDate = new Date(utcIsoString);
 
   const formatter = new Intl.DateTimeFormat("en-GB", {

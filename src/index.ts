@@ -1,8 +1,11 @@
 "use strict";
 
-import { escapeHtml, validateInt, setCookie, getCookie, minMovingAverage, toLondonISOString, getLondonTimeParts, getLondonDayRangeAsDate } from "./modules/utils.js";
-import { getUnitData } from "./modules/api_methods.js";
-import { updatebar, updatekpi } from "./modules/graph.js";
+import { Dexie } from 'dexie';
+
+
+import { escapeHtml, validateInt, setCookie, getCookie, minMovingAverage, toLondonISOString, getLondonTimeParts, getLondonDayRangeAsDate } from "./components/utils.js";
+import { getUnitData } from "./components/api_methods.js";
+import { updatebar, updatekpi } from "./components/graph.js";
 // import { } from "./modules/appliance_utils.js";
 
 
@@ -10,8 +13,12 @@ let offset = 0;
 let next_available = false;
 let region = "A";
 let regions = ["A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "P"]
-let modal = document.getElementById("newApplianceModal");
+let modal = document.getElementById("newApplianceModal")!;
 let appliances = [{id: 'default', name: 'Washing machine', power: 2000, hours: 2, minutes: 30}];
+const right = (document.getElementById("right") as HTMLInputElement);
+const right_floating = (document.getElementById("right-floating") as HTMLInputElement);
+const left = (document.getElementById("left") as HTMLInputElement);
+const left_floating = (document.getElementById("left-floating") as HTMLInputElement);
 
 let db = new Dexie("userData");
 
@@ -24,36 +31,39 @@ db.version(1).stores(storesDef);
 
 async function getNextAvailable() {
     let today = new Date();
-    let last_date = new Date((await db[region].orderBy("valid_from").last()).valid_from);
+    // @ts-ignore
+    let last_date = new Date(await (db[region].orderBy("valid_from").last()).valid_from);
     return (last_date.getDate() > today.getDate());
 };
 
-async function buttonCb(id) {
+async function buttonCb(id: string) {
     if (id == 'right') {
         offset += 1;
-    }
-    else {
+    } else {
         offset -= 1;
     }
-    if ( offset == 1 ){
-        document.getElementById("right").disabled = true;
-        document.getElementById("right-floating").disabled = true;
-    }
-    else if ( offset == 0 && !next_available ){
-        document.getElementById("right").disabled = true;
-        document.getElementById("right-floating").disabled = true;
-    }
-    else {
-        document.getElementById("right").disabled = false;
-        document.getElementById("right-floating").disabled = false;
-    };
 
-    document.getElementById("left").disabled = true;
+    const disabled = (offset == 1 || (offset == 0 && !next_available));
+
+    if (right)
+        right.disabled = disabled;
+    if (right_floating)
+        right_floating.disabled = disabled;
+
+    if (left)
+        left.disabled = true;
+    if (left_floating)
+        left_floating.disabled = true;
+
     await updateGraphs();
-    document.getElementById("left").disabled = false;
+
+    if (left)
+        left.disabled = false;
+    if (left_floating)
+        left_floating.disabled = false;
 };
 
-async function getData(period_from, period_to, initial = false) {
+async function getData(period_from: Date, period_to: Date, initial = false) {
     const t = new Date();
     const td = t.getDate();
     const th = t.getHours();
@@ -61,6 +71,7 @@ async function getData(period_from, period_to, initial = false) {
     let max = 30;
     if (initial)
         max = 1;
+    // @ts-ignore
     let res = await db[region].where("valid_from").between(period_from.toISOString(), period_to.toISOString(), true, false).toArray();
     if (res.length !== 48 && !((pd == td) && res.length >= 40) && !((pd > td) && th >= 16)) {
         let new_period_from = new Date(period_from.valueOf());
@@ -69,7 +80,9 @@ async function getData(period_from, period_to, initial = false) {
         if (initial)
             new_period_to.setDate(new_period_to.getDate() + 1);
         res = (await getUnitData(region, new_period_from, new_period_to)).results;
+        // @ts-ignore
         res = await db[region].bulkPut(res).then(() => {
+            // @ts-ignore
            return db[region].where("valid_from").between(period_from.toISOString(), period_to.toISOString(), true, false).toArray();
         });
     };
@@ -80,11 +93,14 @@ async function updateGraphs(initial = false) {
     let dt_range = getLondonDayRangeAsDate(offset);
 
     let res = await getData(dt_range.start, dt_range.end, initial);
+    // @ts-ignore
     let unit = res.map(a => a.value_inc_vat);
+    // @ts-ignore
     let valid_from = res.map(a => a.valid_from);
 
     const min_price = Math.round(Math.min(...unit) * 100 + Number.EPSILON) / 100;
     const max_price = Math.round(Math.max(...unit) * 100 + Number.EPSILON) / 100;
+    // @ts-ignore
     const average_price = Math.round((unit.reduce((partialSum, a) => partialSum + a, 0) / unit.length) * 100 + Number.EPSILON) / 100;
 
     let london_valid_from = valid_from.map(toLondonISOString);
@@ -95,7 +111,7 @@ async function updateGraphs(initial = false) {
     updatekpi("max", max_price,average_price, "Maximum");
   };
 
-function spawnApplianceWidget(appliance) {
+function spawnApplianceWidget(appliance: any) {
     const frag = document.createDocumentFragment();
     const appliance_widget = document.createElement("div");
     appliance_widget.className = "gridDynamicItem gridHeight";
@@ -126,26 +142,26 @@ function spawnApplianceWidget(appliance) {
     para.style.display = "inline-block";
     appliance_widget.appendChild(para);
     frag.appendChild(appliance_widget);
-    document.getElementById("dynamicBlockGrid").appendChild(frag);
+    document.getElementById("dynamicBlockGrid")!.appendChild(frag);
   };
 
-function removeApplianceWidget(appliance) {
-    document.getElementById(appliance.id).remove();
+function removeApplianceWidget(appliance: any) {
+    document.getElementById(appliance.id)!.remove();
     var index = appliances.indexOf(appliance);
     appliances.splice(index, 1);
     localStorage.setItem("appliances", JSON.stringify(appliances));
     if (appliances.length < 8) {
-        document.getElementById("newAppliance").disabled = false;
+        ((document.getElementById("newAppliance") as HTMLInputElement)!).disabled = false;
     }
 };
 
-function calculateApplianceCost(appliance, avg_cost) {
+function calculateApplianceCost(appliance: any, avg_cost: number) {
     let cost = avg_cost * (appliance.power / 1000) * (appliance.hours + (appliance.minutes / 60));
     cost = Math.round(cost * 10 + Number.EPSILON) / 10;
     return cost;
 };
 
-function calculateApplianceDelayStart(startISODatetime) {
+function calculateApplianceDelayStart(startISODatetime: string) {
     const currentDatetime = new Date();
     const startDatetime = new Date(startISODatetime);
     let diff = startDatetime.getTime() - currentDatetime.getTime();
@@ -164,14 +180,17 @@ function calculateApplianceDelayStart(startISODatetime) {
     return `${hours}h ${minutes}m`;
 };
 
-async function updateAppliance(appliance) {
+async function updateAppliance(appliance: any) {
     let period_from = new Date();
     const intervals = appliance.hours * 2 + Math.ceil(appliance.minutes / 30);
 
+    // @ts-ignore
     let res = await db[region].where("valid_from").above(period_from.toISOString()).toArray();
     console.log(period_from, res);
 
+    // @ts-ignore
     let unit = res.map(a => a.value_inc_vat);
+    // @ts-ignore
     let valid_from = res.map(a => a.valid_from);
 
     res = minMovingAverage(unit, intervals);
@@ -182,16 +201,16 @@ async function updateAppliance(appliance) {
     let cost = calculateApplianceCost(appliance, avg_cost);
 
     const delay_start = calculateApplianceDelayStart(start_time);
-    const appliance_widget = document.getElementById(appliance.id);
-    const delay_start_para= appliance_widget.querySelector(".delayStart");
+    const appliance_widget = document.getElementById(appliance.id)!;
+    const delay_start_para= appliance_widget.querySelector(".delayStart")!;
     delay_start_para.innerHTML = `(A delay start of ${delay_start})`;
-    const cost_para = appliance_widget.querySelector(".cost");
+    const cost_para = appliance_widget.querySelector(".cost")!;
     if (next_available == true) {
-        cost_para.innerHTML = `At a cost of <b>~${cost}p</b>`;
+        cost_para.innerHTML = `At a cost of <b>${cost}p</b>`;
     } else {
-        cost_para.innerHTML = `At a cost of <b>~${cost}p</b>&nbsp;<span class="material-symbols-outlined warning-span tooltip">warning<span class="tooltiptext quicksand-txt">Tomorrow's pricing hasn't<br>been released yet.<br>Check back at 16:00<br>for an updated start time!</span></span>`;
+        cost_para.innerHTML = `At a cost of <b>${cost}p</b>&nbsp;<span class="material-symbols-outlined warning-span tooltip">warning<span class="tooltiptext quicksand-txt">Tomorrow's pricing hasn't<br>been released yet.<br>Check back at 16:00<br>for an updated start time!</span></span>`;
     }
-    const start_para = appliance_widget.querySelector(".start");
+    const start_para = appliance_widget.querySelector(".start")!;
     const parsed_start_time = new Date(start_time);
     const hour_minute = getLondonTimeParts(start_time);
     const start_day = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(parsed_start_time);
@@ -201,15 +220,15 @@ async function updateAppliance(appliance) {
     appliance_widget.style.display = "block";
 };
 
-async function addAppliance(new_appliance = null) {
+async function addAppliance(new_appliance: any = null) {
     if (new_appliance == null) {
-        const appliance_name = escapeHtml(document.getElementById("appName").value);
-        const appliance_power = validateInt(escapeHtml(document.getElementById("appPower").value), 0, 20000);
-        const appliance_hours = validateInt(escapeHtml(document.getElementById("appRunHours").value), 0, 16);
-        const appliance_minutes = validateInt(escapeHtml(document.getElementById("appRunMinutes").value), 0, 59);
+        const appliance_name = escapeHtml(((document.getElementById("appName") as HTMLInputElement)!).value);
+        const appliance_power = validateInt(escapeHtml(((document.getElementById("appPower") as HTMLInputElement)!).value), 0, 20000);
+        const appliance_hours = validateInt(escapeHtml(((document.getElementById("appRunHours") as HTMLInputElement)!).value), 0, 16);
+        const appliance_minutes = validateInt(escapeHtml(((document.getElementById("appRunMinutes") as HTMLInputElement)!).value), 0, 59);
         
         if (appliance_power == -1 || appliance_hours == -1 || appliance_minutes == -1) {
-            const err = document.getElementById("applianceErr");
+            const err = document.getElementById("applianceErr")!;
             err.style.display = "block";
             return;
         }
@@ -223,13 +242,14 @@ async function addAppliance(new_appliance = null) {
             };
 
         appliances.push(new_appliance);
-
+        
+        // @ts-ignore
         new CookiesEuBanner(function () {
             localStorage.setItem("appliances", JSON.stringify(appliances));
         });
         
         if (appliances.length > 7) {
-            document.getElementById("newAppliance").disabled = true;
+            ((document.getElementById("newAppliance") as HTMLInputElement)!).disabled = true;
         }};
 
     spawnApplianceWidget(new_appliance);
@@ -247,62 +267,72 @@ function newAppliance() {
 
 (async() => {
 
-    document.addEventListener("DOMContentLoaded", function () {
-        document.getElementById("region").value = getCookie("region", "A");
-    });
+    document.addEventListener("DOMContentLoaded", async function () {
+        ((document.getElementById("region") as HTMLInputElement)!).value = getCookie("region", "A");
+        
+        region = getCookie("region", "A");
 
-    region = getCookie("region", "A");
-
-    new CookiesEuBanner(function () {
-        appliances = JSON.parse(localStorage.getItem("appliances")) || appliances;
-    });
-    
-    let gather_futs = [];
-
-    await updateGraphs(true);
-    next_available = (await getNextAvailable());
-
-    if (next_available) {
-        document.getElementById("right").disabled = false;
-        document.getElementById("right-floating").disabled = false;
-    };
-
-    for (let appliance of appliances) {
-        gather_futs.push(addAppliance(appliance));
-    };
-
-    if (appliances.length > 7) {
-            document.getElementById("newAppliance").disabled = true;
-    };
-
-    await Promise.all(gather_futs);
-
-    document.getElementById("left").addEventListener("click", () => { buttonCb('left') });
-    document.getElementById("right").addEventListener("click", () => { buttonCb('right') });
-    document.getElementById("left-floating").addEventListener("click", () => { buttonCb('left') });
-    document.getElementById("right-floating").addEventListener("click", () => { buttonCb('right') });
-    document.getElementById("region").addEventListener("change", async(event) => {
-        region = event.target.value;
-        setCookie("region", event.target.value, 365);
-
-        let gather_futs = [];
+        // @ts-ignore
+        new CookiesEuBanner(function () {
+            appliances = JSON.parse(localStorage.getItem("appliances")!) || appliances;
+        });
+        
+        let gather_futs: Promise<void>[] = [];
 
         await updateGraphs(true);
-        
+
+        next_available = (await getNextAvailable());
+        if ( (next_available) ){
+            if (right)
+                right.disabled = false;
+            if (right_floating)
+                right_floating.disabled = false;
+        };
+
         for (let appliance of appliances) {
-            gather_futs.push(updateAppliance(appliance));
+            gather_futs.push(addAppliance(appliance));
+        };
+
+        if (appliances.length > 7) {
+        ((document.getElementById("newAppliance") as HTMLInputElement)!).disabled = true;
         };
 
         await Promise.all(gather_futs);
-      });
-    document.getElementById("newAppliance").addEventListener("click", () => { newAppliance() });
-    document.getElementById("addApplianceButton").addEventListener("click", () => { addAppliance() }); 
-    document.getElementById("closeModal").addEventListener("click", () => { closeApplianceModal() });
-    
-    // When the user clicks anywhere outside of the modal, close it
-    window.onclick = function(event) {
-        if (event.target == modal) {
-            modal.style.display = "none";
-        }
-    } 
+
+        if (left)
+            left.addEventListener("click", () => { buttonCb('left') });
+        if (left_floating)
+            left_floating.addEventListener("click", () => { buttonCb('left') });
+        if (right)
+            right.addEventListener("click", () => { buttonCb('right') });
+        if (right_floating)
+            right_floating.addEventListener("click", () => { buttonCb('right') });
+        document.getElementById("region")!.addEventListener("change", async(event) => {
+            region = ((event.target as HTMLInputElement)!).value;
+            setCookie("region", ((event.target as HTMLInputElement)!).value, 365);
+
+            let gather_futs: Promise<void>[] = [];
+
+            let dt_range = getLondonDayRangeAsDate(0);
+            await getData(dt_range.start, dt_range.end, true); // needed for appliance calcs
+            await updateGraphs(true);
+            
+            for (let appliance of appliances) {
+                gather_futs.push(updateAppliance(appliance));
+            };
+
+            await Promise.all(gather_futs);
+        });
+
+        (document.getElementById("newAppliance")!).addEventListener("click", () => { newAppliance() });
+        (document.getElementById("addApplianceButton")!).addEventListener("click", () => { addAppliance() }); 
+        (document.getElementById("closeModal")!).addEventListener("click", () => { closeApplianceModal() });
+        
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        } 
+    });
   })()
