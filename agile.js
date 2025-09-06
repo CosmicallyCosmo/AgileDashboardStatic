@@ -52,12 +52,15 @@ async function buttonCb(id) {
 };
 
 async function getData(period_from, period_to, initial = false) {
-    let today = new Date();
+    const t = new Date();
+    const td = t.getDate();
+    const th = t.getHours();
+    const pd = period_from.getDate();
     let max = 30;
     if (initial)
         max = 1;
     let res = await db[region].where("valid_from").between(period_from.toISOString(), period_to.toISOString(), true, false).toArray();
-    if (res.length !== 48 && !((period_from >= today) && res.length >= 40) && !((period_from > today) && today.getHours() >= 16)) {
+    if (res.length !== 48 && !((pd == td) && res.length >= 40) && !((pd > td) && th >= 16)) {
         let new_period_from = new Date(period_from.valueOf());
         new_period_from.setDate(period_from.getDate() - max + offset);
         let new_period_to = new Date(period_to.valueOf());
