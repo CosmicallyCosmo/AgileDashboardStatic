@@ -268,8 +268,7 @@ function newAppliance() {
 (async() => {
 
     document.addEventListener("DOMContentLoaded", async function () {
-        ((document.getElementById("region") as HTMLInputElement)!).value = getCookie("region", "A");
-        
+        ((document.getElementById("region") as HTMLInputElement)!).value = getCookie("region", "A")
         next_available = (await getNextAvailable());
         if ( !(next_available) ){
             if (right)
