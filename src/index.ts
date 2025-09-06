@@ -206,9 +206,9 @@ async function updateAppliance(appliance: any) {
     delay_start_para.innerHTML = `(A delay start of ${delay_start})`;
     const cost_para = appliance_widget.querySelector(".cost")!;
     if (next_available == true) {
-        cost_para.innerHTML = `At a cost of <b>~${cost}p</b>`;
+        cost_para.innerHTML = `At a cost of <b>${cost}p</b>`;
     } else {
-        cost_para.innerHTML = `At a cost of <b>~${cost}p</b>&nbsp;<span class="material-symbols-outlined warning-span tooltip">warning<span class="tooltiptext quicksand-txt">Tomorrow's pricing hasn't<br>been released yet.<br>Check back at 16:00<br>for an updated start time!</span></span>`;
+        cost_para.innerHTML = `At a cost of <b>${cost}p</b>&nbsp;<span class="material-symbols-outlined warning-span tooltip">warning<span class="tooltiptext quicksand-txt">Tomorrow's pricing hasn't<br>been released yet.<br>Check back at 16:00<br>for an updated start time!</span></span>`;
     }
     const start_para = appliance_widget.querySelector(".start")!;
     const parsed_start_time = new Date(start_time);
