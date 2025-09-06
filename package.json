@@ -5,7 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc"
+    "build": "tsc && cpx \"packages/**/*\" dist/packages"
   },
   "repository": {
     "type": "git",
@@ -18,7 +18,15 @@
   },
   "homepage": "https://github.com/CosmicallyCosmo/AgileDashboardStatic#readme",
   "dependencies": {
+    "@js-temporal/polyfill": "^0.5.1",
+    "d3": "^7.9.0",
+    "dexie": "^4.2.0",
+    "plotly.js": "^3.1.0"
+  },
+  "devDependencies": {
+    "@types/d3": "^7.4.3",
+    "@types/plotly.js": "^3.0.3",
+    "cpx2": "^8.0.0",
     "typescript": "^5.9.2"
   }
 }
-

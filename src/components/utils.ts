@@ -1,6 +1,7 @@
 "use strict";
 
-import { Temporal } from 'https://cdn.skypack.dev/@js-temporal/polyfill';
+import { Temporal } from '@js-temporal/polyfill';
+import * as d3 from "d3";
 
 var entityMap = {
   '&': '&amp;',
@@ -18,7 +19,8 @@ function isEmpty(obj: any) {
 }
 
 export function escapeHtml(str: string) {
-  return String(str).replace(/[&<>"'`=\/]/g, function (s) {
+  return String(str).replace(/[&<>"'`=\/]/g, function (s: string) {
+    // @ts-ignore
     return entityMap[s];
   });
 }
@@ -42,6 +44,7 @@ export function getJetColor(value: number) {
 }
 
 export function setCookie(cname: any, cvalue: any, exdays: number) {
+    // @ts-ignore
     new CookiesEuBanner(function () {
         const d = new Date();
         d.setTime(d.getTime() + (exdays*24*60*60*1000));

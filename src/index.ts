@@ -1,5 +1,8 @@
 "use strict";
 
+import Dexie from "dexie";
+
+
 import { escapeHtml, validateInt, setCookie, getCookie, minMovingAverage, toLondonISOString, getLondonTimeParts, getLondonDayRangeAsDate } from "./components/utils.js";
 import { getUnitData } from "./components/api_methods.js";
 import { updatebar, updatekpi } from "./components/graph.js";
@@ -28,6 +31,7 @@ db.version(1).stores(storesDef);
 
 async function getNextAvailable() {
     let today = new Date();
+    // @ts-ignore
     let last_date = new Date(await db[region].orderBy("valid_from").last());
     return (last_date.toDateString() > today.toDateString());
 };
@@ -67,6 +71,7 @@ async function getData(period_from: Date, period_to: Date, initial = false) {
     let max = 30;
     if (initial)
         max = 1;
+    // @ts-ignore
     let res = await db[region].where("valid_from").between(period_from.toISOString(), period_to.toISOString(), true, false).toArray();
     if (res.length !== 48 && !((pd == td) && res.length >= 40) && !((pd > td) && th >= 16)) {
         let new_period_from = new Date(period_from.valueOf());
@@ -75,7 +80,9 @@ async function getData(period_from: Date, period_to: Date, initial = false) {
         if (initial)
             new_period_to.setDate(new_period_to.getDate() + 1);
         res = (await getUnitData(region, new_period_from, new_period_to)).results;
+        // @ts-ignore
         res = await db[region].bulkPut(res).then(() => {
+            // @ts-ignore
            return db[region].where("valid_from").between(period_from.toISOString(), period_to.toISOString(), true, false).toArray();
         });
     };
@@ -86,11 +93,14 @@ async function updateGraphs(initial = false) {
     let dt_range = getLondonDayRangeAsDate(offset);
 
     let res = await getData(dt_range.start, dt_range.end, initial);
+    // @ts-ignore
     let unit = res.map(a => a.value_inc_vat);
+    // @ts-ignore
     let valid_from = res.map(a => a.valid_from);
 
     const min_price = Math.round(Math.min(...unit) * 100 + Number.EPSILON) / 100;
     const max_price = Math.round(Math.max(...unit) * 100 + Number.EPSILON) / 100;
+    // @ts-ignore
     const average_price = Math.round((unit.reduce((partialSum, a) => partialSum + a, 0) / unit.length) * 100 + Number.EPSILON) / 100;
 
     let london_valid_from = valid_from.map(toLondonISOString);
@@ -174,10 +184,13 @@ async function updateAppliance(appliance: any) {
     let period_from = new Date();
     const intervals = appliance.hours * 2 + Math.ceil(appliance.minutes / 30);
 
+    // @ts-ignore
     let res = await db[region].where("valid_from").above(period_from.toISOString()).toArray();
     console.log(period_from, res);
 
+    // @ts-ignore
     let unit = res.map(a => a.value_inc_vat);
+    // @ts-ignore
     let valid_from = res.map(a => a.valid_from);
 
     res = minMovingAverage(unit, intervals);
@@ -229,7 +242,8 @@ async function addAppliance(new_appliance: any = null) {
             };
 
         appliances.push(new_appliance);
-
+        
+        // @ts-ignore
         new CookiesEuBanner(function () {
             localStorage.setItem("appliances", JSON.stringify(appliances));
         });
@@ -267,6 +281,7 @@ function newAppliance() {
 
     region = getCookie("region", "A");
 
+    // @ts-ignore
     new CookiesEuBanner(function () {
         appliances = JSON.parse(localStorage.getItem("appliances")!) || appliances;
     });

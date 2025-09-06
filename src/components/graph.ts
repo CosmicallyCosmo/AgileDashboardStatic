@@ -1,10 +1,12 @@
 "use strict";
 
+// @ts-ignore
+import * as Plotly from "../packages/plotly-custom.min.js";
+
 import { normalize, getJetColor } from "./utils.js";
 
 export function updatebar(x: string[], y: number[], suffix = "p", min = -20, max = 50) {
-    var data = [
-        {
+    var data = {
             x: x,
             y: y,
             type: 'bar',
@@ -15,8 +17,7 @@ export function updatebar(x: string[], y: number[], suffix = "p", min = -20, max
                 cmax: max,                      // max value for the color scale
             },
             hovertemplate: '%{x|%H:%M} - %{y}<extra></extra>' 
-        }
-        ];
+        };
     
     let layout = {
         autosize: true,
@@ -50,18 +51,19 @@ export function updatebar(x: string[], y: number[], suffix = "p", min = -20, max
         displayModeBar: false,  // Disable the modebar (zoom, reset, etc.)
         showTips: false,
     };
+
+    // @ts-ignore
     Plotly.react('graphContainer', data, layout, config);
 }
 
-export function updatekpi(id, avg, mavg, label, suffix = "p") {
+export function updatekpi(id: string, avg: number, mavg: number, label: string, suffix = "p") {
 
     const minValue = -20;
     const maxValue = 50;
     const normalizedValue = normalize(avg, minValue, maxValue);
     const color = getJetColor(normalizedValue); // Returns color in rgba format
 
-    var data = [
-        {
+    var data = {
           domain: { x: [0, 1], y: [0, 1] },
           value: avg,
           title: { text: label, font: {size: 15}},
@@ -71,7 +73,6 @@ export function updatekpi(id, avg, mavg, label, suffix = "p") {
           number: {suffix: suffix},
           gauge: { axis: { range: [-10, 100] },  bar: { color: color }}
         }
-      ];
 
     var layout = {
         margin: { l: 20, r: 45, t: 50, b: 20},
@@ -89,5 +90,6 @@ export function updatekpi(id, avg, mavg, label, suffix = "p") {
         staticPlot: true,
     };
 
+    // @ts-ignore
     Plotly.react(id, data, layout, config);
 }

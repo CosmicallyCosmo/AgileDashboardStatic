@@ -6,7 +6,9 @@
     "strict": true,
     "esModuleInterop": true,
     "moduleResolution": "node",
-    "sourceMap": true
+    "sourceMap": true,
+    "lib": ["ESNext", "DOM"],
+    "baseUrl": ".",
   },
-  "include": ["src"]
+  "include": ["src", "packages"],
 }
