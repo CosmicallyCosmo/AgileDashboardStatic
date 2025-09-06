@@ -57,11 +57,11 @@ async function getData(period_from, period_to, initial = false) {
     if (initial)
         max = 1;
     let res = await db[region].where("valid_from").between(period_from.toISOString(), period_to.toISOString(), true, false).toArray();
-    if (res.length !== 48 && !((period_from >= today) && res.length >= 40)) {
+    if (res.length !== 48 && !((period_from >= today) && res.length >= 40) && !((period_from > today) && today.getHours() >= 16)) {
         let new_period_from = new Date(period_from.valueOf());
         new_period_from.setDate(period_from.getDate() - max + offset);
         let new_period_to = new Date(period_to.valueOf());
-        if (initial && today.getHours() >= 16)
+        if (initial)
             new_period_to.setDate(new_period_to.getDate() + 1);
         res = (await getUnitData(region, new_period_from, new_period_to)).results;
         res = db[region].bulkPut(res).then(() => {

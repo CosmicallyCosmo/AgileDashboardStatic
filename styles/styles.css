@@ -12,7 +12,7 @@ body {
 
 @font-face {
   font-family: 'Quicksand';
-  src: url('fonts/Quicksand-VariableFont_wght.tff') format('truetype');
+  src: url('../fonts/Quicksand-VariableFont_wght.tff') format('truetype');
 }
 
 .quicksand-txt {
