@@ -260,6 +260,12 @@ function newAppliance() {
     let gather_futs = [];
 
     await updateGraphs(true);
+    next_available = (await getNextAvailable());
+
+    if (next_available) {
+        document.getElementById("right").disabled = false;
+        document.getElementById("right-floating").disabled = false;
+    };
 
     for (let appliance of appliances) {
         gather_futs.push(addAppliance(appliance));
@@ -270,12 +276,6 @@ function newAppliance() {
     };
 
     await Promise.all(gather_futs);
-    next_available = (await getNextAvailable());
-
-    if (next_available) {
-        document.getElementById("right").disabled = false;
-        document.getElementById("right-floating").disabled = false;
-    };
 
     document.getElementById("left").addEventListener("click", () => { buttonCb('left') });
     document.getElementById("right").addEventListener("click", () => { buttonCb('right') });
