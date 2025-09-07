@@ -65,7 +65,7 @@ export function updatekpi(id: string, avg: number, mavg: number, label: string, 
     var data = [{
           domain: { x: [0, 1], y: [0, 1] },
           value: avg,
-          title: { text: label, font: {size: 15}},
+          title: { text: label, font: {size: 18}},
           type: "indicator",
           mode: "gauge+number",
           delta: { reference: mavg},

@@ -101,9 +101,9 @@ async function updateGraphs(initial = false, direction = "right") {
     let london_valid_from = valid_from.map(toLondonISOString);
 
     updatebar(london_valid_from, unit);
-    updatekpi("min", min_price, average_price, "Minimum");
-    updatekpi("avg", average_price, average_price, "Average");
-    updatekpi("max", max_price,average_price, "Maximum");
+    updatekpi("min", min_price, average_price, "Minimum price");
+    updatekpi("avg", average_price, average_price, "Average price");
+    updatekpi("max", max_price,average_price, "Maximum price");
   };
 
 function spawnApplianceWidget(appliance: any) {
