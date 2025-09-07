@@ -30,10 +30,35 @@ const storesDef = Object.fromEntries(
 db.version(1).stores(storesDef);
 
 async function getNextAvailable() {
-    let today = new Date();
+    let tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
     // @ts-ignore
     let last_date = new Date((await db[region].orderBy("valid_from").last()).valid_from);
-    return (last_date.getDate() > today.getDate());
+    return (last_date.getTime() > tomorrow.getTime());
+};
+
+async function getData(pf: Date, pt: Date, initial = false) {
+    const t = new Date();
+    let max = 30;
+    if (initial)
+        max = 1;
+    // @ts-ignore
+    let res = await db[region].where("valid_from").between(pf.toISOString(), pt.toISOString(), true, false).toArray();
+    if (res.length !== 48 && !((pf.toDateString() == t.toDateString()) && res.length >= 40) && !((pf.getTime() > t.getTime()) && t.getHours() >= 16)) {
+        let new_period_from = new Date(pf.valueOf());
+        new_period_from.setDate(pf.getDate() - max);
+        let new_period_to = new Date(pt.valueOf());
+        if (initial)
+            new_period_to.setDate(new_period_to.getDate() + 1);
+        res = (await getUnitData(region, new_period_from, new_period_to)).results;
+        // @ts-ignore
+        res = await db[region].bulkPut(res).then(() => {
+            // @ts-ignore
+           return db[region].where("valid_from").between(pf.toISOString(), pt.toISOString(), true, false).toArray();
+        });
+    };
+    return res;
 };
 
 async function buttonCb(id: string) {
@@ -45,49 +70,16 @@ async function buttonCb(id: string) {
 
     const disabled = (offset == 1 || (offset == 0 && !next_available));
 
-    if (right)
-        right.disabled = disabled;
-    if (right_floating)
-        right_floating.disabled = disabled;
-
-    if (left)
-        left.disabled = true;
-    if (left_floating)
-        left_floating.disabled = true;
+    right.disabled = disabled;
+    right_floating.disabled = disabled;
+    left.disabled = true;
+    left_floating.disabled = true;
 
     await updateGraphs();
 
-    if (left)
-        left.disabled = false;
-    if (left_floating)
-        left_floating.disabled = false;
+    left.disabled = false;
+    left_floating.disabled = false;
 };
-
-async function getData(period_from: Date, period_to: Date, initial = false) {
-    const t = new Date();
-    const td = t.getTime();
-    const th = t.getHours();
-    const pd = period_from.getTime();
-    let max = 30;
-    if (initial)
-        max = 1;
-    // @ts-ignore
-    let res = await db[region].where("valid_from").between(period_from.toISOString(), period_to.toISOString(), true, false).toArray();
-    if (res.length !== 48 && !((pd == td) && res.length >= 40) && !((pd > td) && th >= 16)) {
-        let new_period_from = new Date(period_from.valueOf());
-        new_period_from.setDate(period_from.getDate() - max + offset);
-        let new_period_to = new Date(period_to.valueOf() + offset);
-        if (initial)
-            new_period_to.setDate(new_period_to.getDate() + 1);
-        res = (await getUnitData(region, new_period_from, new_period_to)).results;
-        // @ts-ignore
-        res = await db[region].bulkPut(res).then(() => {
-            // @ts-ignore
-           return db[region].where("valid_from").between(period_from.toISOString(), period_to.toISOString(), true, false).toArray();
-        });
-    };
-    return res;
-}
 
 async function updateGraphs(initial = false) {
     let dt_range = getLondonDayRangeAsDate(offset);
@@ -278,12 +270,9 @@ function newAppliance() {
         await updateGraphs(true);
 
         next_available = (await getNextAvailable());
-        if ( (next_available) ){
-            if (right)
-                right.disabled = false;
-            if (right_floating)
-                right_floating.disabled = false;
-        };
+
+        right.disabled = !next_available;
+        right_floating.disabled = !next_available;
 
         for (let appliance of appliances) {
             gather_futs.push(addAppliance(appliance));
@@ -295,14 +284,10 @@ function newAppliance() {
 
         await Promise.all(gather_futs);
 
-        if (left)
-            left.addEventListener("click", () => { buttonCb('left') });
-        if (left_floating)
-            left_floating.addEventListener("click", () => { buttonCb('left') });
-        if (right)
-            right.addEventListener("click", () => { buttonCb('right') });
-        if (right_floating)
-            right_floating.addEventListener("click", () => { buttonCb('right') });
+        left.addEventListener("click", () => { buttonCb('left') });
+        left_floating.addEventListener("click", () => { buttonCb('left') });
+        right.addEventListener("click", () => { buttonCb('right') });
+        right_floating.addEventListener("click", () => { buttonCb('right') });
 
         document.getElementById("region")!.addEventListener("change", async(event) => {
             region = ((event.target as HTMLInputElement)!).value;
