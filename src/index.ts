@@ -38,7 +38,7 @@ async function getNextAvailable() {
     return (last_date.getTime() > tomorrow.getTime());
 };
 
-async function getData(pf: Date, pt: Date, initial = false) {
+async function getData(pf: Date, pt: Date, initial = false, direction = "right") {
     const t = new Date();
     let max = 30;
     if (initial)
@@ -46,12 +46,14 @@ async function getData(pf: Date, pt: Date, initial = false) {
     // @ts-ignore
     let res = await db[region].where("valid_from").between(pf.toISOString(), pt.toISOString(), true, false).toArray();
     if (res.length !== 48 && !((pf.toDateString() == t.toDateString()) && res.length >= 40) && !((pf.getTime() > t.getTime()) && t.getHours() >= 16)) {
-        let new_period_from = new Date(pf.valueOf());
-        new_period_from.setDate(pf.getDate() - max);
-        let new_period_to = new Date(pt.valueOf());
-        if (initial)
-            new_period_to.setDate(new_period_to.getDate() + Math.abs(offset) + 1);
-        res = (await getUnitData(region, new_period_from, new_period_to)).results;
+        let npf = new Date(pf.valueOf());
+        let npt = new Date(pt.valueOf());
+        if (direction === "left" ) {
+            npf.setDate(npf.getDate() - max);
+        } else {
+            npt.setDate(npt.getDate() + max);
+        };
+        res = (await getUnitData(region, npf, npt)).results;
         // @ts-ignore
         res = await db[region].bulkPut(res).then(() => {
             // @ts-ignore
@@ -75,7 +77,7 @@ async function buttonCb(id: string) {
     left.disabled = true;
     left_floating.disabled = true;
 
-    await updateGraphs();
+    await updateGraphs(false, id);
 
     right.disabled = disabled;
     right_floating.disabled = disabled;
@@ -83,9 +85,9 @@ async function buttonCb(id: string) {
     left_floating.disabled = false;
 };
 
-async function updateGraphs(initial = false) {
+async function updateGraphs(initial = false, direction = "right") {
     let dt_range = getLondonDayRangeAsDate(offset);
-    let res = await getData(dt_range.start, dt_range.end, initial);
+    let res = await getData(dt_range.start, dt_range.end, initial, direction);
     // @ts-ignore
     let unit = res.map(a => a.value_inc_vat);
     // @ts-ignore
