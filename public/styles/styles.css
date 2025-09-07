@@ -255,6 +255,7 @@ clear: both;
   column-gap: 30px;
   row-gap: 10px;
   grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  grid-template-rows: 180px;
   grid-auto-rows: 180px;
 }
 
@@ -542,7 +543,7 @@ clear: both;
   display: none;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 1100px) {
     html, body {
         width: 100%;
         padding-left: 8px;
@@ -551,10 +552,6 @@ clear: both;
         margin: 0;
         font-family: Arial;
         background: #f1f1f1;
-    }
-
-    .gridHeight {
-      height: 215px !important;
     }
 
     .hc {
@@ -586,8 +583,13 @@ clear: both;
       margin-bottom: 8px;
       column-gap: 10px;
       row-gap: 10px;
-      grid-auto-rows: 215px;
       grid-template-columns: 1fr 1fr;
+      grid-template-rows: 180px 180px;
+      grid-auto-rows: 225px;
+    }
+
+    .gridHeight {
+      height: 225px !important;
     }
 
     .eqcolumn {
@@ -608,23 +610,5 @@ clear: both;
     }
     .ts {
         font-size: 16px !important;
-    }
-  }
-
-  @media (min-width: 801px) and (max-width: 1200px) {
-    .hm {
-      display: none !important;
-      visibility: hidden !important;
-    }
-
-    .sms {
-        width: 35% !important;
-    }
-    .sml {
-        width: 60% !important;
-        margin-left: 0% !important;
-    }
-    .ts {
-        font-size: 20px !important;
     }
   }
