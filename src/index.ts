@@ -50,7 +50,7 @@ async function getData(pf: Date, pt: Date, initial = false) {
         new_period_from.setDate(pf.getDate() - max);
         let new_period_to = new Date(pt.valueOf());
         if (initial)
-            new_period_to.setDate(new_period_to.getDate() + 1);
+            new_period_to.setDate(new_period_to.getDate() + Math.abs(offset) + 1);
         res = (await getUnitData(region, new_period_from, new_period_to)).results;
         // @ts-ignore
         res = await db[region].bulkPut(res).then(() => {
