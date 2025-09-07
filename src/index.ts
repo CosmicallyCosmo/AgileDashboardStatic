@@ -70,13 +70,15 @@ async function buttonCb(id: string) {
 
     const disabled = (offset == 1 || (offset == 0 && !next_available));
 
-    right.disabled = disabled;
-    right_floating.disabled = disabled;
+    right.disabled = true;
+    right_floating.disabled = true;
     left.disabled = true;
     left_floating.disabled = true;
 
     await updateGraphs();
 
+    right.disabled = disabled;
+    right_floating.disabled = disabled;
     left.disabled = false;
     left_floating.disabled = false;
 };
