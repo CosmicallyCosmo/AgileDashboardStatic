@@ -118,7 +118,12 @@ function spawnApplianceWidget(appliance: any) {
     span.addEventListener("click", () => { removeApplianceWidget(appliance) });
     appliance_widget.appendChild(span);
     var p = document.createElement("p");
-    p.innerHTML = `${appliance.name}<br>${appliance.power}W`;
+    p.innerHTML = `${appliance.name}`;
+    p.className = "quicksand-txt title";
+    appliance_widget.appendChild(p);
+    var para = document.createElement("p");
+    var p = document.createElement("p");
+    p.innerHTML = `${appliance.power}W`;
     p.className = "quicksand-txt title";
     appliance_widget.appendChild(p);
     var para = document.createElement("p");
@@ -134,7 +139,7 @@ function spawnApplianceWidget(appliance: any) {
     appliance_widget.appendChild(para);
     para = document.createElement("p");
     para.className = "cost quicksand-txt";
-    para.style.display = "inline-block";
+    para.style.display = "block";
     appliance_widget.appendChild(para);
     frag.appendChild(appliance_widget);
     document.getElementById("dynamicBlockGrid")!.appendChild(frag);
