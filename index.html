@@ -46,7 +46,7 @@
           <option value="N">Southern Scotland</option>
           <option value="P">Northern Scotland</option>
         </select>
-        <span class="material-symbols-outlined settings-span">settings</span>
+        <span class="material-symbols-outlined settings-span" id="settingsButton">settings</span>
       </div>
     </div>
     <div>
@@ -137,5 +137,16 @@
     <div class="footer quicksand-txt">
       <p>Always verify the content produced by this website, we are not liable financially or otherwise for misleading or incorrect data.<br>© William Anderson 2025. This site is a work in progress - more features are coming! We are not affiliated with Octopus Energy in any way.</p>
     </div>
+  <template id="widgetTemplate">
+    <div data-type="applianceWidget" class="gridDynamicItem gridHeight" style="display: none;">
+      <span class="close">&times;</span>
+      <p data-field="name" class="quicksand-txt title"></p> <!-- Appliance name -->
+      <p class="quicksand-txt title"><span data-field="power"></span>W</p> <!-- Appliance power -->
+      <p class="quicksand-txt">Start at <b><span data-field="startAt"></span></b></p> <!-- Appliance start time -->
+      <p class="quicksand-txt">(A delay start of <span data-field="delayStart"></span>)</p> <!-- Appliance delay start -->
+      <p class="quicksand-txt">For <span data-field="hours"></span> hours and <span data-field="minutes"></span> minutes</p> <!-- Appliance run time -->
+      <p class="quicksand-txt">At a cost of <b><span data-field="cost"></span>p</b>&nbsp;<span class="material-symbols-outlined warning-span tooltip" style="display: none;" data-field="warning">warning<span class="tooltiptext quicksand-txt">Tomorrow's pricing hasn't<br>been released yet.<br>Check back at 16:00<br>for an updated start time!</span></span></p> <!-- Appliance cost -->
+    </div>
+  </template>
   </body>
 </html>

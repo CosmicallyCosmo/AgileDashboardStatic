@@ -2,7 +2,7 @@
 
 declare const Plotly: any;
 
-import { normalize, getJetColor } from "./utils.js";
+import { normalize, getJetColor } from "./utils.ts";
 
 export function updatebar(x: string[], y: number[], suffix = "p", min = -20, max = 50) {
     var data = [{

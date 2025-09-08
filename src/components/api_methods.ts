@@ -1,6 +1,6 @@
 "use strict";
 
-import { escapeHtml } from "./utils.js";
+import { escapeHtml } from "./utils.ts";
 
 async function get(url: string, params = {}) {
     let response = await fetch(url, params);

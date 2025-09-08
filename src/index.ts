@@ -3,18 +3,18 @@
 import { Dexie } from 'dexie';
 declare const CookiesEuBanner: any;
 
-import { escapeHtml, validateInt, setCookie, getCookie, minMovingAverage, toLondonISOString, getLondonTimeParts, getLondonDayRangeAsDate } from "./components/utils.js";
-import { getUnitData } from "./components/api_methods.js";
-import { updatebar, updatekpi } from "./components/graph.js";
-// import { } from "./modules/appliance_utils.js";
-
+import { escapeHtml, validateInt, setCookie, getCookie, minMovingAverage, toLondonISOString, getLondonDayRangeAsDate } from "./components/utils.ts";
+import { getUnitData } from "./components/api_methods.ts";
+import { updatebar, updatekpi } from "./components/graph.ts";
+import type { Appliance } from "./components/appliance_utils.ts";
+import { calculateApplianceCost, calculateApplianceDelayStart } from "./components/appliance_utils.ts";
 
 let offset = 0;
 let next_available = false;
 let region = "A";
 let regions = ["A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "P"]
 let modal = null;
-let appliances = [{id: 'default', name: 'Washing machine', power: 2000, hours: 2, minutes: 30}];
+let appliances: Appliance[] = [{id: 'default', name: 'Washing machine', power: 2000, runTime: {hours: 2, minutes: 30}}];
 const right = (document.getElementById("right") as HTMLInputElement);
 const right_floating = (document.getElementById("right-floating") as HTMLInputElement);
 const left = (document.getElementById("left") as HTMLInputElement);
@@ -104,119 +104,67 @@ async function updateGraphs(initial = false, direction = "right") {
     updatekpi("min", min_price, average_price, "Minimum price");
     updatekpi("avg", average_price, average_price, "Average price");
     updatekpi("max", max_price,average_price, "Maximum price");
-  };
-
-function spawnApplianceWidget(appliance: any) {
-    const frag = document.createDocumentFragment();
-    const appliance_widget = document.createElement("div");
-    appliance_widget.className = "gridDynamicItem gridHeight";
-    appliance_widget.id = appliance.id;
-    appliance_widget.style.display = "none";
-    var span = document.createElement("span");
-    span.innerHTML = "&times;";
-    span.className = "close";
-    span.addEventListener("click", () => { removeApplianceWidget(appliance) });
-    appliance_widget.appendChild(span);
-    var p = document.createElement("p");
-    p.innerHTML = `${appliance.name}`;
-    p.className = "quicksand-txt title";
-    appliance_widget.appendChild(p);
-    var para = document.createElement("p");
-    var p = document.createElement("p");
-    p.innerHTML = `${appliance.power}W`;
-    p.className = "quicksand-txt title";
-    appliance_widget.appendChild(p);
-    var para = document.createElement("p");
-    para.className = "start quicksand-txt";
-    appliance_widget.appendChild(para);
-    para = document.createElement("p");
-    para.className = "delayStart quicksand-txt";
-    appliance_widget.appendChild(para);
-    frag.appendChild(appliance_widget);
-    para = document.createElement("p");
-    para.innerHTML = `For ${appliance.hours} hours ${appliance.minutes} minutes`;
-    para.className = "quicksand-txt";
-    appliance_widget.appendChild(para);
-    para = document.createElement("p");
-    para.className = "cost quicksand-txt";
-    para.style.display = "block";
-    appliance_widget.appendChild(para);
-    frag.appendChild(appliance_widget);
-    document.getElementById("dynamicBlockGrid")!.appendChild(frag);
-  };
-
-function removeApplianceWidget(appliance: any) {
-    document.getElementById(appliance.id)!.remove();
-    var index = appliances.indexOf(appliance);
-    appliances.splice(index, 1);
-    localStorage.setItem("appliances", JSON.stringify(appliances));
-    if (appliances.length < 8) {
-        ((document.getElementById("newAppliance") as HTMLInputElement)!).disabled = false;
-    }
 };
 
-function calculateApplianceCost(appliance: any, avg_cost: number) {
-    let cost = avg_cost * (appliance.power / 1000) * (appliance.hours + (appliance.minutes / 60));
-    cost = Math.round(cost * 10 + Number.EPSILON) / 10;
-    return cost;
+function spawnApplianceWidget(appliance: Appliance) {
+    const widgetTemplate = document.getElementById("widgetTemplate");
+    const applianceWidget = (widgetTemplate! as HTMLTemplateElement).content.cloneNode(true) as DocumentFragment;
+    const applianceContainer = applianceWidget.querySelector('[data-type="applianceWidget"') as HTMLDivElement;
+    applianceContainer.id = appliance.id;
+    Object.keys(appliance).forEach(function(key) {
+        if (["id", "startAt", "runTime"].includes(key)) return;
+        var applianceField = applianceContainer.querySelector(`[data-field="${key}"]`) as HTMLParagraphElement;
+        applianceField.textContent = String(appliance[key as keyof Appliance]);
+        });
+    const span = applianceContainer.getElementsByClassName("close")[0];
+    span.addEventListener("click", () => { removeAppliance(appliance) });  
+    document.getElementById("dynamicBlockGrid")!.appendChild(applianceContainer);
 };
 
-function calculateApplianceDelayStart(startISODatetime: string) {
-    const currentDatetime = new Date();
-    const startDatetime = new Date(startISODatetime);
-    let diff = startDatetime.getTime() - currentDatetime.getTime();
-    let hours = Math.floor(diff / 1000 / 60 / 60);
-    diff -= hours * 1000 * 60 * 60;
-    let minutes = Math.floor(diff / 1000 / 60);
-    minutes = Math.round(minutes / 30) * 30;
-    if (minutes == 60) {
-        hours += 1;
-        minutes = 0;
-    }
-    // If using time pickers with 24 hours format, add the below line get exact hours
-    if (hours < 0) {
-       hours = hours + 24;
-    }
-    return `${hours}h ${minutes}m`;
-};
-
-async function updateAppliance(appliance: any) {
+async function updateAppliance(appliance: Appliance) {
     let period_from = new Date();
-    const intervals = appliance.hours * 2 + Math.ceil(appliance.minutes / 30);
-
+    let period_to = new Date(period_from.valueOf());
+    period_to.setDate(period_from.getDate() + 2);
+    const intervals = appliance.runTime.hours * 2 + Math.ceil(appliance.runTime.minutes / 30);
     // @ts-ignore
-    let res = await db[region].where("valid_from").above(period_from.toISOString()).toArray();
-
+    let res = await getData(period_from, period_to);
     // @ts-ignore
     let unit = res.map(a => a.value_inc_vat);
     // @ts-ignore
     let valid_from = res.map(a => a.valid_from);
+    let cheapestWindow = minMovingAverage(unit, intervals);
+    const avg_cost = Math.round(cheapestWindow.sum * 100 + Number.EPSILON) / (100 * intervals);
 
-    res = minMovingAverage(unit, intervals);
+    const startTime = new Date(valid_from.at(cheapestWindow.startIndex));
+    appliance.startAt = startTime;
+    calculateApplianceCost(appliance, avg_cost);
+    calculateApplianceDelayStart(appliance);
 
-    let avg_cost = Math.round(res.sum * 100 + Number.EPSILON) / (100 * intervals);
-    let start_time = valid_from.at(res.startIndex);
+    const start_day = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(appliance.startAt);
 
-    let cost = calculateApplianceCost(appliance, avg_cost);
+    const startHour = ("0" + appliance.startAt.getHours()).slice(-2);
+    const startMinute = ("0" + appliance.startAt.getMinutes()).slice(-2);
 
-    const delay_start = calculateApplianceDelayStart(start_time);
-    const appliance_widget = document.getElementById(appliance.id)!;
-    const delay_start_para= appliance_widget.querySelector(".delayStart")!;
-    delay_start_para.innerHTML = `(A delay start of ${delay_start})`;
-    const cost_para = appliance_widget.querySelector(".cost")!;
-    if (next_available) {
-        cost_para.innerHTML = `At a cost of <b>${cost}p</b>`;
-    } else {
-        cost_para.innerHTML = `At a cost of <b>${cost}p</b>&nbsp;<span class="material-symbols-outlined warning-span tooltip">warning<span class="tooltiptext quicksand-txt">Tomorrow's pricing hasn't<br>been released yet.<br>Check back at 16:00<br>for an updated start time!</span></span>`;
+    const fields: any = {
+        startAt: `${start_day} ${startHour}:${startMinute}`,
+        hours: `${appliance.runTime!.hours}`,
+        minutes: `${appliance.runTime!.minutes}`,
+        delayStart: `${appliance.delayStart!.hours}h ${appliance.delayStart!.minutes}m`,
+        cost: String(appliance.cost),
     }
-    const start_para = appliance_widget.querySelector(".start")!;
-    const parsed_start_time = new Date(start_time);
-    const hour_minute = getLondonTimeParts(start_time);
-    const start_day = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(parsed_start_time);
-    const hours = ("0" + hour_minute.hour).slice(-2);
-    const minutes = ("0" + hour_minute.minute).slice(-2);
-    start_para.innerHTML = `Start at <b>${start_day} ${hours}:${minutes}</b>`;
-    appliance_widget.style.display = "block";
+    
+    const applianceContainer = document.getElementById(appliance.id)!;
+    Object.keys(fields).forEach(function(key) {
+        var applianceField = applianceContainer.querySelector(`[data-field="${key}"]`) as HTMLParagraphElement;
+        applianceField.textContent = String(fields[key]);
+        });
+    
+    if (!next_available) {
+        var warn = applianceContainer.querySelector('[data-field="warning"]') as HTMLSpanElement;
+        warn.style.display = "inline-block";
+    }
+
+    applianceContainer.style.display = "block";
 };
 
 async function parseAppliance() {
@@ -234,9 +182,8 @@ async function parseAppliance() {
     let new_appliance = {
         id: self.crypto.randomUUID(),
         name: appliance_name,
+        runTime: {hours: appliance_hours, minutes: appliance_minutes},
         power: appliance_power,
-        hours: appliance_hours,
-        minutes: appliance_minutes,
         };
 
     appliances.push(new_appliance);
@@ -253,14 +200,23 @@ async function parseAppliance() {
     closeModal();
 };
 
-async function addAppliance(new_appliance: any) {
+async function addAppliance(new_appliance: Appliance) {
     spawnApplianceWidget(new_appliance);
     await updateAppliance(new_appliance);
 };
 
+function removeAppliance(appliance: Appliance) {
+    document.getElementById(appliance.id)!.remove();
+    var index = appliances.indexOf(appliance);
+    appliances.splice(index, 1);
+    localStorage.setItem("appliances", JSON.stringify(appliances));
+    if (appliances.length < 8) {
+        ((document.getElementById("newAppliance") as HTMLInputElement)!).disabled = false;
+    }
+};
+
 
 function closeModal() {
-    console.log("closed..?");
     modal!.style.display = "none";
   };
 
