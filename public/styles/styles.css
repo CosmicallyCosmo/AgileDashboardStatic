@@ -30,7 +30,19 @@ body {
 }
 
 .settings-span {
-    font-variation-settings: 'wght' 200, 'GRAD' 100;
+  font-variation-settings: 'wght' 200, 'GRAD' 40, 'opsz' 35;
+  transform: rotate(30deg);
+  transition: transform 0.75s ease-in-out; /* ramp up & down */
+  font-size: 40px !important;
+  vertical-align: text-top;
+}
+
+.settings-span:hover {
+  transform: rotate(360deg);
+}
+
+.menu-span {
+  font-variation-settings: 'wght' 400, 'GRAD' 100;
   font-size: 40px !important;
   vertical-align: text-top;
 }
@@ -128,7 +140,6 @@ body {
 }
 
 .navSettings > span:hover {
-  background-color: rgb(234, 232, 232);
   cursor: pointer;
 }
         
@@ -397,6 +408,8 @@ clear: both;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow for a cleaner look */
     border-radius: 8px; /* Rounded corners */
     padding: 6px;
+    margin-top: 8px;
+    margin-bottom: 8px;
     font-size: 13px;
     text-align: center;
 }
@@ -548,6 +561,10 @@ clear: both;
       display: none !important;
     }
 
+    .sc {
+      display: block !important;
+    }
+
     .gh {
       height: 400px !important;
     }
@@ -578,7 +595,7 @@ clear: both;
       margin-bottom: 8px;
       column-gap: 30px;
       grid-template-columns: 5fr 0.25fr;
-      grid-template-rows: 70px;
+      grid-template-rows: 60px;
     }
     
     .navigation > h1 {
