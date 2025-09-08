@@ -13,7 +13,7 @@ let offset = 0;
 let next_available = false;
 let region = "A";
 let regions = ["A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "P"]
-let modal = document.getElementById("newApplianceModal")!;
+let modal = null;
 let appliances = [{id: 'default', name: 'Washing machine', power: 2000, hours: 2, minutes: 30}];
 const right = (document.getElementById("right") as HTMLInputElement);
 const right_floating = (document.getElementById("right-floating") as HTMLInputElement);
@@ -219,47 +219,53 @@ async function updateAppliance(appliance: any) {
     appliance_widget.style.display = "block";
 };
 
-async function addAppliance(new_appliance: any = null) {
-    if (new_appliance == null) {
-        const appliance_name = escapeHtml(((document.getElementById("appName") as HTMLInputElement)!).value);
-        const appliance_power = validateInt(escapeHtml(((document.getElementById("appPower") as HTMLInputElement)!).value), 0, 20000);
-        const appliance_hours = validateInt(escapeHtml(((document.getElementById("appRunHours") as HTMLInputElement)!).value), 0, 16);
-        const appliance_minutes = validateInt(escapeHtml(((document.getElementById("appRunMinutes") as HTMLInputElement)!).value), 0, 59);
-        
-        if (appliance_power == -1 || appliance_hours == -1 || appliance_minutes == -1) {
-            const err = document.getElementById("applianceErr")!;
-            err.style.display = "block";
-            return;
-        }
+async function parseAppliance() {
+    const appliance_name = escapeHtml(((document.getElementById("appName") as HTMLInputElement)!).value);
+    const appliance_power = validateInt(escapeHtml(((document.getElementById("appPower") as HTMLInputElement)!).value), 0, 20000);
+    const appliance_hours = validateInt(escapeHtml(((document.getElementById("appRunHours") as HTMLInputElement)!).value), 0, 16);
+    const appliance_minutes = validateInt(escapeHtml(((document.getElementById("appRunMinutes") as HTMLInputElement)!).value), 0, 59);
+    
+    if (appliance_power == -1 || appliance_hours == -1 || appliance_minutes == -1) {
+        const err = document.getElementById("applianceErr")!;
+        err.style.display = "block";
+        return;
+    };
 
-        new_appliance = {
-            id: self.crypto.randomUUID(),
-            name: appliance_name,
-            power: appliance_power,
-            hours: appliance_hours,
-            minutes: appliance_minutes,
-            };
+    let new_appliance = {
+        id: self.crypto.randomUUID(),
+        name: appliance_name,
+        power: appliance_power,
+        hours: appliance_hours,
+        minutes: appliance_minutes,
+        };
 
-        appliances.push(new_appliance);
+    appliances.push(new_appliance);
 
-        new CookiesEuBanner(function () {
-            localStorage.setItem("appliances", JSON.stringify(appliances));
-        });
-        
-        if (appliances.length > 7) {
-            ((document.getElementById("newAppliance") as HTMLInputElement)!).disabled = true;
-        }};
+    new CookiesEuBanner(function () {
+        localStorage.setItem("appliances", JSON.stringify(appliances));
+    });
+    
+    if (appliances.length > 7) {
+        ((document.getElementById("newAppliance") as HTMLInputElement)!).disabled = true;
+    };
 
+    await addAppliance(new_appliance);
+    closeModal();
+};
+
+async function addAppliance(new_appliance: any) {
     spawnApplianceWidget(new_appliance);
     await updateAppliance(new_appliance);
-    closeApplianceModal();
+};
+
+
+function closeModal() {
+    console.log("closed..?");
+    modal!.style.display = "none";
   };
 
-function closeApplianceModal() {
-    modal.style.display = "none";
-  };
-
-function newAppliance() {
+function openModal(id: string) {
+    modal = document.getElementById(id)!;
     modal.style.display = "block";
   };
 
@@ -315,14 +321,19 @@ function newAppliance() {
             await Promise.all(gather_futs);
         });
 
-        (document.getElementById("newAppliance")!).addEventListener("click", () => { newAppliance() });
-        (document.getElementById("addApplianceButton")!).addEventListener("click", () => { addAppliance() }); 
-        (document.getElementById("closeModal")!).addEventListener("click", () => { closeApplianceModal() });
+        (document.getElementById("newAppliance")!).addEventListener("click", () => { openModal("applianceModal") });
+        (document.getElementById("addApplianceButton")!).addEventListener("click", () => { parseAppliance() });
+        (document.getElementById("settingsButton")!).addEventListener("click", () => { openModal("settingsModal") }); 
+        
+        let closeModalArr = document.getElementsByClassName("closeModal");
+        for (var i = 0; i < closeModalArr.length; i++)
+            closeModalArr[i].addEventListener("click", () => { closeModal() });
         
         // When the user clicks anywhere outside of the modal, close it
         window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
+            if (event.target == modal!) {
+                //@ts-ignore
+                modal!.style.display = "none";
             }
         } 
     });

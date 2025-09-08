@@ -29,121 +29,79 @@ body {
   color: red;
 }
 
+.settings-span {
+    font-variation-settings: 'wght' 200, 'GRAD' 100;
+  font-size: 40px !important;
+  vertical-align: text-top;
+}
+
 .tooltip 
-        {
-            position: absolute;
-            display: flex;
-            border-bottom: 2px solid black;
-        }
-    
-        .tooltip .tooltiptext 
-        {
-            visibility: hidden;
-            top: 120%;
-            right: 0;
-            max-width: 200px;    /* prevents runaway width */
-            font-size: 12px;
-            background-color: rgb(228, 226, 226);
-            color: black;
-            text-align: center;
-            border-radius: 6px;
-            padding: 5px 0;
-    
-            /* Position the tooltip */
-            position: absolute;
-            z-index: 1;
-        }
-    
-        .tooltip:hover .tooltiptext 
-        {
-           visibility: visible;
-        }
+    {
+        position: absolute;
+        display: flex;
+        border-bottom: 2px solid black;
+    }
 
-.topnav {
-    align-items: center;
-    justify-content: center;
-    display: flex;
-    overflow: hidden;
-    background-color: white;
-    width: calc(40% - 16px);
-    margin-left: 30%;
-    padding-left: 16px;
-    padding-right: 16px;
+    .tooltip .tooltiptext 
+    {
+        visibility: hidden;
+        top: 120%;
+        right: 0;
+        max-width: 200px;    /* prevents runaway width */
+        font-size: 12px;
+        background-color: rgb(228, 226, 226);
+        color: black;
+        text-align: center;
+        border-radius: 6px;
+        padding: 5px 0;
+
+        /* Position the tooltip */
+        position: absolute;
+        z-index: 1;
+    }
+
+    .tooltip:hover .tooltiptext 
+    {
+        visibility: visible;
+    }
+
+.navGrid {
+    display: grid;
     margin-bottom: 8px;
-    margin-top: 8px;
-    text-align: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow for a cleaner look */
-    border-radius: 8px; /* Rounded corners */
+    column-gap: 30px;
+    grid-template-columns: 5fr 1fr;
+    grid-template-rows: 80px;
 }
 
-.topnav a {
-    float: left;
-    display: block;
-    color: black;
-    text-align: center;
-    text-decoration: none;
-    font-size: 17px;
-}
-
-.topnav h1 {
-    float: left;
-    display: block;
-    color: black;
-    text-decoration: none;
-    font-size: 35px;
-}
-
-.navlink {
-    display: flex;
-    align-items: center;
-    width: 20%;
-}
-
-.logo {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 60%;
-
-}
-
-.navselect {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
+.navGrid > div {
+    display: inline-flex;
+    flex-direction: row;
     background-color: white;
-    width: calc(22% - 16px);
-    margin-left: auto;
-    padding-left: 8px;
-    padding-right: 8px;
-    margin-bottom: 8px;
-    margin-top: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow for a cleaner look */
     border-radius: 8px; /* Rounded corners */
+    padding: 20px;
+    height: 100%;
+    width: fit-content;
+    text-align: center;
+    justify-content: start;
+    align-items: center;
 }
 
-.selectn {
-    flex-grow: 1;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    border-radius: 8px; /* Rounded corners */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow for a cleaner look */
-    font-size: 15px;
+.navigation > h1 {
+  font-size: 30px;
 }
 
-.sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-  }
+.navigation > ul {
+  display: flex;
+  gap: 17px;
+  list-style-type: none;
+}
 
+.navSettings {
+  margin-left: auto;
+  gap: 10px;
+}
+        
 .titlecol {
     background-color: white;
     padding-bottom: 4px;
@@ -154,11 +112,11 @@ body {
     align-items: center;
 }
 
-.titlecol h1 {
+.titlecol h2 {
     display: block;
     text-align: center;
     text-decoration: none;
-    font-size: 30px;
+    font-size: 25px;
 }
 
 .titlecol p {
@@ -175,7 +133,7 @@ body {
 }
 
 .gcolumn {
-    height: min(90vh, 600px);
+    height: 600px;
     background-color: white;
     margin: 8px;
     width: 100%; /* Slightly smaller divs for three items per row */
@@ -556,6 +514,10 @@ clear: both;
 
     .hc {
       display: none !important;
+    }
+
+    .gh {
+      height: 400px !important;
     }
 
     .mc {

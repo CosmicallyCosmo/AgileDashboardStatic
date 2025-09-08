@@ -8,10 +8,10 @@
     <link rel="canonical" href="http://www.agiledashboard.co.uk/">
     <script defer src="/packages/cookies-eu-banner.min.js"></script>
     <script defer src="/packages/plotly-custom.min.js"></script>
-    <script defer type="module" src="/src/index.ts?v=11"></script>
-    <link rel="stylesheet" href="/styles/styles.css?v=11">
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=warning" as="style">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=warning"/>
+    <script defer type="module" src="/src/index.ts?v=12"></script>
+    <link rel="stylesheet" href="/styles/styles.css?v=12">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" as="style">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=settings,warning"/>
   </head>
   <body>
     <div id="cookies-eu-banner" style="display: none;">
@@ -19,15 +19,17 @@
       <button id="cookies-eu-reject">Reject</button>
       <button id="cookies-eu-accept">Accept</button>
     </div>
-    <div style="display: flex;">
-      <div class="topnav sml" id="mytopnav">
-        <div class="navlink hc" style="justify-content: left;"><a href="https://www.cosmicallycosmo.com/linkedin">About me</a></div>
-        <div class="logo"><h1 class="ts quicksand-txt">Agile Dashboard</h1></div>
-        <div class="navlink hc" style="justify-content: right;"><a href="https://ko-fi.com/agiledashboard">Blog</a></div>
+    <div class="navGrid" id="mytopnav">
+      <div class="navigation">
+        <h1 class="quicksand-txt">Agile Dashboard</h1>
+        <ul class="hc">
+          <li><a href="https://www.cosmicallycosmo.com/linkedin">About me</a></li>
+          <li><a href="https://ko-fi.com/agiledashboard">Blog</a>  </li> 
+        </ul>
       </div>
-      <div class="navselect sms">
-        <label for="region" class="sr-only">Choose a region:</label>
-        <select class="selectn" id="region" name="region" autocomplete="off">
+      <div class="navSettings">
+        <label for="region" style="display: none;">Choose a region:</label>
+        <select class="hc" id="region" name="region" autocomplete="off">
           <option value="" selected hidden></option>
           <option value="A">Eastern England</option>
           <option value="B">East Midlands</option>
@@ -44,17 +46,18 @@
           <option value="N">Southern Scotland</option>
           <option value="P">Northern Scotland</option>
         </select>
+        <span class="material-symbols-outlined settings-span">settings</span>
       </div>
     </div>
     <div>
       <div class="titlecol">
-        <div><h1 class="quicksand-txt">Daily Agile Octopus prices</h1></div>
+        <div><h2 class="quicksand-txt">Daily Agile Octopus prices</h2></div>
         <div><p>View the latest agile prices in your region below, including indicators on current price trends.</p></div>
       </div>
     </div>
     <div style="display: flex;">
       <div class="leftbcolumn navbutton hc"><button id="left" class="button">&lt;</button></div>
-      <div class="gcolumn mc" id="graphContainer"></div>
+      <div class="gcolumn mc gh" id="graphContainer"></div>
       <div class="rightbcolumn navbutton hc"><button id="right" class="button" disabled>&gt;</button></div>
     </div>
     <div class="floatingControls">
@@ -71,9 +74,9 @@
       <div id="avg"></div>
       <div id="max"></div>
     </div>
-    <div id="newApplianceModal" class="modal">
+    <div id="applianceModal" class="modal">
       <div class="modal-content modalSmall">
-        <span class="close" id="closeModal">&times;</span>
+        <span class="close closeModal">&times;</span>
         <!-- Would be nice to have some easy default values for common appliances -->
         <label for="appName" class="quicksand-txt">Appliance name </label><br>
         <input type="text" id="appName" name="appName" value="Tumble dryer" class="quicksand-txt"><br>
@@ -87,6 +90,18 @@
         <p style="color: red; display: none" id="applianceErr">Error: invalid form parameters - please double check!</p>
       </div>
     </div>
+    <div id="settingsModal" class="modal">
+      <div class="modal-content modalSmall">
+        <span class="close closeModal">&times;</span>
+        <label for="accountNumber" class="quicksand-txt">Account number </label><br>
+        <input type="text" id="accountNumber" name="accountNumber" class="quicksand-txt"><br>
+        <label for="APIKey" class="quicksand-txt">API key </label><br>
+        <input type="text" id="APIKey" name="APIKey" class="quicksand-txt"><br>
+        <p>Note: you're details & data isn't shared with us - all processing is done entirely in your browser.</p>
+        <input type="button" id="addDetailsButton" class = "addApplianceButton quicksand-txt" value="Get usage data">
+        <p>
+      </div>
+    </div>     
     <div class='faq'>
       <input id='faq-a' type='checkbox'>
       <label for='faq-a'>
