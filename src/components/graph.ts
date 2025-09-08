@@ -34,10 +34,10 @@ export function updatebar(x: string[], y: number[], suffix = "p", min = -20, max
             font: { size: 20 }
           },
         margin: {
-                l: 40,  // Left margin
-                r: 10,  // Right margin
+                l: 25,  // Left margin
+                r: 5,  // Right margin
                 t: 80,  // Top margin (reduce for tighter title spacing)
-                b: 40   // Bottom margin
+                b: 15   // Bottom margin
         },
     };
 

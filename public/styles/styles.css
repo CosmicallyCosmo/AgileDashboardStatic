@@ -572,6 +572,23 @@ clear: both;
         z-index: 1000; /* Makes sure it stays on top */
     }
 
+    .navGrid {
+      display: grid;
+      margin-top: 8px;
+      margin-bottom: 8px;
+      column-gap: 30px;
+      grid-template-columns: 5fr 0.25fr;
+      grid-template-rows: 70px;
+    }
+    
+    .navigation > h1 {
+      font-size: 25px;
+    }
+
+    .titlecol h2 {
+      font-size: 30px;
+    }
+
     .blockGrid {
       display: grid;
       margin-bottom: 8px;
