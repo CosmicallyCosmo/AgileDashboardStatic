@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-sitemap: https://www.cosmicallycosmo.com/sitemap.xml
+sitemap: https://www.agiledashboard.co.uk/sitemap.xml
