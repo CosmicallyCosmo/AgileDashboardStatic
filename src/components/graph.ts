@@ -4,7 +4,7 @@ declare const Plotly: any;
 
 import { normalize, getJetColor } from "./utils.ts";
 
-export function updatebar(x: string[], y: number[], suffix = "p", min = -20, max = 50) {
+export function newBar(x: string[], y: number[], suffix = "p", min = -20, max = 50) {
     var data = [{
             x: x,
             y: y,
@@ -50,13 +50,35 @@ export function updatebar(x: string[], y: number[], suffix = "p", min = -20, max
         displayModeBar: false,  // Disable the modebar (zoom, reset, etc.)
         showTips: false,
     };
+    Plotly.newPlot('graphContainer', data, layout, config);
+};
 
-    // @ts-ignore
-    Plotly.react('graphContainer', data, layout, config);
-}
+export function updateBar(x: string[], y: number[], suffix = "p", min = -20, max = 50) {
+    // Prepare new data
+    var newData = {
+        y: y,
+        marker: { color: y, cmin: min, cmax: max } // update colors
+    };
 
-export function updatekpi(id: string, avg: number, mavg: number, label: string, suffix = "p") {
+    // Animate the update
+    Plotly.animate('graphContainer', {
+        data: [newData]      // new trace data
+    }, {
+        transition: {
+            duration: 250,   // duration of animation in ms
+            easing: 'cubic-in-out'
+        },
+        frame: { duration: 250, redraw: true }
+    });
 
+    // Update layout if needed (e.g., title or y-axis)
+    Plotly.relayout('graphContainer', {
+        'yaxis.ticksuffix': suffix,
+        'title.text': new Date(x[0]).toLocaleDateString('en-GB', {day: 'numeric', month: 'long', year: 'numeric'})
+    });
+};
+
+export function newKPI (id: string, avg: number, mavg: number, label: string, suffix = "p") {
     const minValue = -20;
     const maxValue = 50;
     const normalizedValue = normalize(avg, minValue, maxValue);
@@ -90,5 +112,28 @@ export function updatekpi(id: string, avg: number, mavg: number, label: string, 
     };
 
     // @ts-ignore
-    Plotly.react(id, data, layout, config);
+    Plotly.newPlot(id, data, layout, config);
+}
+
+export function updateKPI(id: string, avg: number, mavg: number, label: string, suffix = "p") {
+    const minValue = -20;
+    const maxValue = 50;
+    const normalizedValue = normalize(avg, minValue, maxValue);
+    const color = getJetColor(normalizedValue); // Returns color in rgba format
+
+    // Animate the gauge value and color
+    Plotly.animate(id, {
+        data: [{
+            value: avg,
+            gauge: { bar: { color: color } },
+            delta: { reference: mavg },
+            number: { suffix: suffix },
+        }]
+    }, {
+        transition: {
+            duration: 500, // speed of animation in ms
+            easing: 'cubic-in-out'
+        },
+        frame: { duration: 500, redraw: true }
+    });
 }

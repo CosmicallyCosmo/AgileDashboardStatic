@@ -5,7 +5,7 @@ declare const CookiesEuBanner: any;
 
 import { escapeHtml, validateInt, setCookie, getCookie, minMovingAverage, toLondonISOString, getLondonDayRangeAsDate } from "./components/utils.ts";
 import { getUnitData } from "./components/api_methods.ts";
-import { updatebar, updatekpi } from "./components/graph.ts";
+import { newBar, updateBar, newKPI, updateKPI } from "./components/graph.ts";
 import type { Appliance } from "./components/appliance_utils.ts";
 import { calculateApplianceCost, calculateApplianceDelayStart } from "./components/appliance_utils.ts";
 
@@ -101,10 +101,17 @@ async function updateGraphs(initial = false, direction = "right") {
 
     let london_valid_from = valid_from.map(toLondonISOString);
 
-    updatebar(london_valid_from, unit);
-    updatekpi("min", min_price, average_price, "Minimum price");
-    updatekpi("avg", average_price, average_price, "Average price");
-    updatekpi("max", max_price,average_price, "Maximum price");
+    if (initial) {
+        newBar(london_valid_from, unit);
+        newKPI("min", min_price, average_price, "Minimum price");
+        newKPI("avg", average_price, average_price, "Average price");
+        newKPI("max", max_price,average_price, "Maximum price");
+    } else {
+        updateBar(london_valid_from, unit);
+        updateKPI("min", min_price, average_price, "Minimum price");
+        updateKPI("avg", average_price, average_price, "Average price");
+        updateKPI("max", max_price,average_price, "Maximum price");
+    }
 
     if (initial)
         document.getElementById("graphContainer")!.classList.add("show");
