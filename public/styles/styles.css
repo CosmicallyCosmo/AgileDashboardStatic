@@ -182,7 +182,8 @@ body {
 
 .gcolumn {
     opacity: 0;
-    transition: opacity 0.5s ease;
+    transform: scale(0.95);
+    transition: opacity 0.5s ease, transform 0.5s ease;
     height: 600px;
     background-color: white;
     margin: 8px;
@@ -193,6 +194,7 @@ body {
 
 .show {
     opacity: 1;
+    transform: scale(1);
   }
 
 #graphContainer .plotly .cursor-pointer {
@@ -269,6 +271,7 @@ clear: both;
   grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
   grid-template-rows: 180px;
   grid-auto-rows: 180px;
+  grid-auto-flow: row;
 }
 
 .blockGrid > div {
@@ -287,23 +290,27 @@ clear: both;
 }
 
 .static {
+    transform: scale(0.95);
     animation: easeIn 1s ease forwards;
 }
 
 @keyframes easeIn {
   to {
     opacity: 1;
+    transform: scale(1);
   }
 }
 
 .gridDynamicItem {
   grid-column: span 1;
   grid-row: span 1;
-  transition: opacity 0.6s ease;
+  transform: scale(0.95);
+  transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
 .gridDynamicItem.show {
     opacity: 1;
+    transform: scale(1);
   }
 
 .gridDynamicItem > p {
@@ -359,7 +366,7 @@ clear: both;
 
  /* The Modal (background) */
 .modal {
-  display: none; /* Hidden by default */
+  visibility: hidden;
   position: fixed; /* Stay in place */
   z-index: 1; /* Sit on top */
   left: 0;
@@ -373,6 +380,9 @@ clear: both;
 
 /* Modal Content/Box */
 .modal-content {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.6s ease, transform 0.6s ease;
   background-color: #fefefe;
   margin: 15% auto; /* 15% from the top and centered */
   padding: 20px;
@@ -380,6 +390,12 @@ clear: both;
   width: 30%; /* Could be more or less, depending on screen size */
   border-radius: 16px;
 }
+
+.modal-content.show {
+    opacity: 1;
+    transform: scale(1);
+    visibility: visible;
+  }
 
 .addApplianceButton {
   background-color: #3D48BF;
@@ -641,6 +657,7 @@ clear: both;
       grid-template-columns: 1fr 1fr;
       grid-template-rows: 180px 180px;
       grid-auto-rows: 225px;
+      grid-auto-flow: row;
     }
 
     .gridHeight {

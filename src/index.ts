@@ -227,12 +227,20 @@ function removeAppliance(appliance: Appliance) {
 
 
 function closeModal() {
-    modal!.style.display = "none";
+    let modalContent = modal!.querySelector(".modal-content");
+    modalContent.classList.remove("show");
+    modalContent.addEventListener("transitionend", () => {
+        console.log("transitioned");
+        modal!.style.visibility = "hidden";
+    }, { once: true });
   };
 
 function openModal(id: string) {
-    modal = document.getElementById(id)!;
-    modal.style.display = "block";
+    modal = document.getElementById(id)! as HTMLDivElement;
+    requestAnimationFrame(() => {
+        modal!.querySelector(".modal-content")!.classList.add("show");
+    });
+    modal.style.visibility = "visible";
   };
 
 (async() => {
