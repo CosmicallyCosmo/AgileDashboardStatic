@@ -32,10 +32,13 @@ db.version(1).stores(storesDef);
 async function getNextAvailable() {
     let tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0);
+    tomorrow.setHours(12, 0, 0, 0);
     // @ts-ignore
-    let last_date = new Date((await db[region].orderBy("valid_from").last()).valid_from);
-    return (last_date.getTime() > tomorrow.getTime());
+    let res = await db[region].orderBy("valid_from").last();
+    if (!res) return false;
+    let last_date = new Date(res.valid_from);
+    if (!(last_date.getTime() > tomorrow.getTime())) return false;
+    return true;
 };
 
 async function getData(pf: Date, pt: Date, initial = false, direction = "right") {
@@ -64,6 +67,8 @@ async function getData(pf: Date, pt: Date, initial = false, direction = "right")
             // @ts-ignore
            return db[region].where("valid_from").between(pf.toISOString(), pt.toISOString(), true, false).toArray();
         });
+    if (!nextAvailable)
+        nextAvailable = await getNextAvailable();
     };
     return res;
 };
@@ -281,8 +286,8 @@ function newAppliance() {
         
         let gather_futs: Promise<void>[] = [];
 
+        nextAvailable = await getNextAvailable();
         await updateGraphs(true);
-        nextAvailable = (await getNextAvailable());
 
         right.disabled = !nextAvailable;
         right_floating.disabled = !nextAvailable;
