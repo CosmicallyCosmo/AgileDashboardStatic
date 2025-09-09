@@ -65,15 +65,16 @@ export function updateBar(x: string[], y: number[], suffix = "p", min = -20, max
         data: [newData]      // new trace data
     }, {
         transition: {
-            duration: 250,   // duration of animation in ms
+            duration: 500,   // duration of animation in ms
             easing: 'cubic-in-out'
         },
-        frame: { duration: 250, redraw: true }
+        frame: { duration: 500, redraw: true }
     });
 
     // Update layout if needed (e.g., title or y-axis)
     Plotly.relayout('graphContainer', {
         'yaxis.ticksuffix': suffix,
+        'yaxis.range': [Math.min(0, Math.min(...y)), 40],
         'title.text': new Date(x[0]).toLocaleDateString('en-GB', {day: 'numeric', month: 'long', year: 'numeric'})
     });
 };
@@ -120,7 +121,7 @@ export function updateKPI(id: string, avg: number, mavg: number, label: string, 
     const maxValue = 50;
     const normalizedValue = normalize(avg, minValue, maxValue);
     const color = getJetColor(normalizedValue); // Returns color in rgba format
-
+    console.log(label) // temp;
     // Animate the gauge value and color
     Plotly.animate(id, {
         data: [{
