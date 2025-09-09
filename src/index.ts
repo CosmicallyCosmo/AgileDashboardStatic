@@ -10,7 +10,7 @@ import { updatebar, updatekpi } from "./components/graph.js";
 
 
 let offset = 0;
-let next_available = false;
+let nextAvailable = false;
 let region = "A";
 let regions = ["A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "P"]
 let modal = document.getElementById("newApplianceModal")!;
@@ -45,7 +45,12 @@ async function getData(pf: Date, pt: Date, initial = false, direction = "right")
         max = 1;
     // @ts-ignore
     let res = await db[region].where("valid_from").between(pf.toISOString(), pt.toISOString(), true, false).toArray();
-    if (res.length !== 48 && !((pf.toDateString() == t.toDateString()) && res.length >= 40) && !((pf.getTime() > t.getTime()) && t.getHours() >= 16)) {
+    if (
+        (initial && t.getHours() >= 16 && !nextAvailable) || // Initial load & time for an update
+        (res.length !== 48 && // We haven't got all the data for the day
+        !((pf.toDateString() == t.toDateString()) && res.length >= 40) &&  // We haven't got all the data but it's today
+        !((pf.getTime() > t.getTime()) && t.getHours() >= 16)) // We're trying to fetch data for tomorrow and it's past 16:00
+    ) {
         let npf = new Date(pf.valueOf());
         let npt = new Date(pt.valueOf());
         if (direction === "left" ) {
@@ -70,7 +75,7 @@ async function buttonCb(id: string) {
         offset -= 1;
     }
 
-    const disabled = (offset == 1 || (offset == 0 && !next_available));
+    const disabled = (offset == 1 || (offset == 0 && !nextAvailable));
 
     right.disabled = true;
     right_floating.disabled = true;
@@ -204,7 +209,7 @@ async function updateAppliance(appliance: any) {
     const delay_start_para= appliance_widget.querySelector(".delayStart")!;
     delay_start_para.innerHTML = `(A delay start of ${delay_start})`;
     const cost_para = appliance_widget.querySelector(".cost")!;
-    if (next_available) {
+    if (nextAvailable) {
         cost_para.innerHTML = `At a cost of <b>${cost}p</b>`;
     } else {
         cost_para.innerHTML = `At a cost of <b>${cost}p</b>&nbsp;<span class="material-symbols-outlined warning-span tooltip">warning<span class="tooltiptext quicksand-txt">Tomorrow's pricing hasn't<br>been released yet.<br>Check back at 16:00<br>for an updated start time!</span></span>`;
@@ -277,11 +282,10 @@ function newAppliance() {
         let gather_futs: Promise<void>[] = [];
 
         await updateGraphs(true);
+        nextAvailable = (await getNextAvailable());
 
-        next_available = (await getNextAvailable());
-
-        right.disabled = !next_available;
-        right_floating.disabled = !next_available;
+        right.disabled = !nextAvailable;
+        right_floating.disabled = !nextAvailable;
 
         for (let appliance of appliances) {
             gather_futs.push(addAppliance(appliance));
