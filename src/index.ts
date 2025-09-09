@@ -19,6 +19,7 @@ const right = (document.getElementById("right") as HTMLInputElement);
 const right_floating = (document.getElementById("right-floating") as HTMLInputElement);
 const left = (document.getElementById("left") as HTMLInputElement);
 const left_floating = (document.getElementById("left-floating") as HTMLInputElement);
+let menuRotated = false;
 
 let db = new Dexie("userData");
 
@@ -225,6 +226,10 @@ function removeAppliance(appliance: Appliance) {
     }
 };
 
+function rotateMenuIcon() {
+    menuRotated = !menuRotated; // toggle state
+    document.getElementById("settingsMenu")!.style.transform = menuRotated ? "rotate(-90deg)" : "rotate(0deg)";
+}
 
 function closeModal() {
     let modalContent = modal!.querySelector(".modal-content");
@@ -232,6 +237,8 @@ function closeModal() {
     modalContent.addEventListener("transitionend", () => {
         console.log("transitioned");
         modal!.style.visibility = "hidden";
+        if (modal!.id === "settingsModal")
+            rotateMenuIcon();
     }, { once: true });
   };
 
@@ -298,7 +305,10 @@ function openModal(id: string) {
         (document.getElementById("newAppliance")!).addEventListener("click", () => { openModal("applianceModal") });
         (document.getElementById("addApplianceButton")!).addEventListener("click", () => { parseAppliance() });
         (document.getElementById("settingsButton")!).addEventListener("click", () => { openModal("settingsModal") });
-        (document.getElementById("settingsMenu")!).addEventListener("click", () => { openModal("settingsModal") }); 
+        
+        let settingsMenu = document.getElementById("settingsMenu")!;
+        settingsMenu.addEventListener("click", () => { openModal("settingsModal") });
+        settingsMenu.addEventListener("click", () => { rotateMenuIcon() });
         
         let closeModalArr = document.getElementsByClassName("closeModal");
         for (var i = 0; i < closeModalArr.length; i++)
@@ -307,8 +317,7 @@ function openModal(id: string) {
         // When the user clicks anywhere outside of the modal, close it
         window.onclick = function(event) {
             if (event.target == modal!) {
-                //@ts-ignore
-                modal!.style.display = "none";
+                closeModal();
             }
         } 
     });

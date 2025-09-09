@@ -30,6 +30,7 @@ body {
 }
 
 .settings-span {
+  display: inline-block;
   font-variation-settings: 'wght' 200, 'GRAD' 40, 'opsz' 35;
   transform: rotate(30deg);
   transition: transform 0.75s ease-in-out; /* ramp up & down */
@@ -42,14 +43,12 @@ body {
 }
 
 .menu-span {
+  display: inline-block;
+  transition: transform 0.5s ease;
   font-variation-settings: 'wght' 400, 'GRAD' 100;
   transition: transform 0.75s ease-in-out; /* ramp up & down */
   font-size: 40px !important;
   vertical-align: text-top;
-}
-
-.menu-span:hover {
-  transform: rotate(90deg);
 }
 
 .tooltip 
