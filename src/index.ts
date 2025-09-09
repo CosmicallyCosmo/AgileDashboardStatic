@@ -104,6 +104,9 @@ async function updateGraphs(initial = false, direction = "right") {
     updatekpi("min", min_price, average_price, "Minimum price");
     updatekpi("avg", average_price, average_price, "Average price");
     updatekpi("max", max_price,average_price, "Maximum price");
+
+    if (initial)
+        document.getElementById("graphContainer")!.classList.add("show");
 };
 
 function spawnApplianceWidget(appliance: Appliance) {
@@ -121,7 +124,7 @@ function spawnApplianceWidget(appliance: Appliance) {
     document.getElementById("dynamicBlockGrid")!.appendChild(applianceContainer);
 };
 
-async function updateAppliance(appliance: Appliance) {
+async function updateAppliance(appliance: Appliance, initial = false) {
     let period_from = new Date();
     let period_to = new Date(period_from.valueOf());
     period_to.setDate(period_from.getDate() + 2);
@@ -151,7 +154,7 @@ async function updateAppliance(appliance: Appliance) {
         minutes: `${appliance.runTime!.minutes}`,
         delayStart: `${appliance.delayStart!.hours}h ${appliance.delayStart!.minutes}m`,
         cost: String(appliance.cost),
-    }
+    };
     
     const applianceContainer = document.getElementById(appliance.id)!;
     Object.keys(fields).forEach(function(key) {
@@ -162,9 +165,12 @@ async function updateAppliance(appliance: Appliance) {
     if (!next_available) {
         var warn = applianceContainer.querySelector('[data-field="warning"]') as HTMLSpanElement;
         warn.style.display = "inline-block";
-    }
-
-    applianceContainer.style.display = "block";
+    };
+    if (initial) {
+        requestAnimationFrame(() => {
+            applianceContainer.classList.add("show");
+        });
+    };
 };
 
 async function parseAppliance() {
@@ -202,11 +208,15 @@ async function parseAppliance() {
 
 async function addAppliance(new_appliance: Appliance) {
     spawnApplianceWidget(new_appliance);
-    await updateAppliance(new_appliance);
+    await updateAppliance(new_appliance, true);
 };
 
 function removeAppliance(appliance: Appliance) {
-    document.getElementById(appliance.id)!.remove();
+    let applianceContainer = document.getElementById(appliance.id) as HTMLDivElement;
+    applianceContainer.classList.remove("show");
+    applianceContainer.addEventListener("transitionend", () => {
+      applianceContainer.remove();
+    });
     var index = appliances.indexOf(appliance);
     appliances.splice(index, 1);
     localStorage.setItem("appliances", JSON.stringify(appliances));
@@ -271,7 +281,7 @@ function openModal(id: string) {
             await updateGraphs();
             
             for (let appliance of appliances) {
-                gather_futs.push(updateAppliance(appliance));
+                gather_futs.push(updateAppliance(appliance, true));
             };
 
             await Promise.all(gather_futs);
@@ -279,7 +289,8 @@ function openModal(id: string) {
 
         (document.getElementById("newAppliance")!).addEventListener("click", () => { openModal("applianceModal") });
         (document.getElementById("addApplianceButton")!).addEventListener("click", () => { parseAppliance() });
-        (document.getElementById("settingsButton")!).addEventListener("click", () => { openModal("settingsModal") }); 
+        (document.getElementById("settingsButton")!).addEventListener("click", () => { openModal("settingsModal") });
+        (document.getElementById("settingsMenu")!).addEventListener("click", () => { openModal("settingsModal") }); 
         
         let closeModalArr = document.getElementsByClassName("closeModal");
         for (var i = 0; i < closeModalArr.length; i++)

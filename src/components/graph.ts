@@ -32,7 +32,7 @@ export function updatebar(x: string[], y: number[], suffix = "p", min = -20, max
         title: {
             text: new Date(x[0]).toLocaleDateString('en-GB', {day: 'numeric', month: 'long', year: 'numeric'}),
             font: { size: 20 }
-          },
+        },
         margin: {
                 l: 25,  // Left margin
                 r: 5,  // Right margin
