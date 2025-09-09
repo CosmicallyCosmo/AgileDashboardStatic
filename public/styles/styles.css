@@ -304,7 +304,7 @@ clear: both;
   grid-column: span 1;
   grid-row: span 1;
   transform: scale(0.95);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition: opacity 0.6s ease, transform 0.3s ease;
 }
 
 .gridDynamicItem.show {
@@ -381,7 +381,7 @@ clear: both;
 .modal-content {
   opacity: 0;
   transform: scale(0.95);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
   background-color: #fefefe;
   margin: 15% auto; /* 15% from the top and centered */
   padding: 20px;
