@@ -39,6 +39,22 @@ async function getNextAvailable() {
     return (last_date.getTime() > tomorrow.getTime());
 };
 
+function moveSelect(e: any) {
+    let select = document.getElementById("region") as HTMLSelectElement;
+    let desktopContainer = document.getElementById("navSelect") as HTMLDivElement;
+    let mobileContainer = document.getElementById("modalContent") as HTMLDivElement;
+    if (e.matches) {
+        // Mobile
+        mobileContainer.prepend(select);
+        select.style.display = "inline-block";
+    } else {
+        // Desktop
+        desktopContainer.appendChild(select);
+        desktopContainer.style.visibility = "visible";
+        select.style.display = "inline-block";
+    }
+};
+
 async function getData(pf: Date, pt: Date, initial = false, direction = "right") {
     const t = new Date();
     let max = 30;
@@ -309,6 +325,10 @@ function openModal(id: string) {
             await Promise.all(gather_futs);
         });
 
+        const mediaQuery = window.matchMedia("(max-width: 1100px)");
+        moveSelect(mediaQuery);
+
+        mediaQuery.addEventListener("change", moveSelect);
         (document.getElementById("newAppliance")!).addEventListener("click", () => { openModal("applianceModal") });
         (document.getElementById("addApplianceButton")!).addEventListener("click", () => { parseAppliance() });
         (document.getElementById("settingsButton")!).addEventListener("click", () => { openModal("settingsModal") });

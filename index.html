@@ -27,9 +27,9 @@
           <li><a href="https://ko-fi.com/agiledashboard" class="quicksand-txt">Blog</a></li> 
         </ul>
       </div>
-      <div class="navSelect hc">
+      <div id="navSelect" class="navSelect hc" style="visibility: hidden;">
         <label for="region" style="display: none;">Choose a region:</label>
-        <select id="region" name="region" autocomplete="off">
+        <select id="region" name="region" autocomplete="off" style="display:none;">
           <option value="" selected hidden></option>
           <option value="A">Eastern England</option>
           <option value="B">East Midlands</option>
@@ -94,7 +94,7 @@
       </div>
     </div>
     <div id="settingsModal" class="modal">
-      <div class="modal-content modalSmall">
+      <div id="modalContent" class="modal-content modalSmall">
         <span class="close closeModal">&times;</span>
         <label for="accountNumber" class="quicksand-txt">Account number </label><br>
         <input type="text" id="accountNumber" name="accountNumber" class="quicksand-txt"><br>
