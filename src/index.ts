@@ -20,6 +20,7 @@ const right_floating = (document.getElementById("right-floating") as HTMLInputEl
 const left = (document.getElementById("left") as HTMLInputElement);
 const left_floating = (document.getElementById("left-floating") as HTMLInputElement);
 let menuRotated = false;
+let isMobile = false;
 
 let db = new Dexie("userData");
 
@@ -45,8 +46,10 @@ function moveSelect(e: any) {
     let mobileContainer = document.getElementById("modalContent") as HTMLDivElement;
     if (e.matches) {
         // Mobile
-        mobileContainer.prepend(select);
+        let br = document.createElement("br");
+        mobileContainer.prepend(select, br, br);
         select.style.display = "inline-block";
+        isMobile = true;
     } else {
         // Desktop
         desktopContainer.appendChild(select);
@@ -249,8 +252,8 @@ function removeAppliance(appliance: Appliance) {
     }
 };
 
-function rotateMenuIcon() {
-    menuRotated = !menuRotated; // toggle state
+function rotateMenuIcon(override: boolean | null = null) {
+    menuRotated = override || !menuRotated; // toggle state
     document.getElementById("settingsMenu")!.style.transform = menuRotated ? "rotate(-90deg)" : "rotate(0deg)";
 }
 
@@ -260,8 +263,8 @@ function closeModal() {
     modalContent.addEventListener("transitionend", () => {
         console.log("transitioned");
         modal!.style.visibility = "hidden";
-        if (modal!.id === "settingsModal")
-            rotateMenuIcon();
+        if (modal!.id === "settingsModal" && isMobile)
+            rotateMenuIcon(false);
     }, { once: true });
   };
 
