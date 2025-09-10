@@ -4,9 +4,21 @@ declare const Plotly: any;
 
 import { normalize, getJetColor } from "./utils.ts";
 
+function generateTimes() {
+    let times = [];
+    let start = new Date(1970, 0, 1, 0, 0, 0, 0);
+    for (let i = 0; i < 48; i++) {
+        const time = new Date(start.getTime() + i * 30 * 60 * 1000);
+        times.push(time);
+      }
+    return times;
+}
+
 export function newBar(x: string[], y: number[], suffix = "p", min = -20, max = 50) {
+    // TODO: pad out the values so the new day has 48 then normalize etc
+    y = Object.assign(new Array(48), y);
     var data = [{
-            x: x,
+            x: generateTimes(),
             y: y,
             type: 'bar',
             marker: {
@@ -20,8 +32,8 @@ export function newBar(x: string[], y: number[], suffix = "p", min = -20, max = 
     
     let layout = {
         autosize: true,
-        xaxis: {fixedrange: true, tickformat: '%H:%M'},
-        yaxis: {fixedrange: true, showgrid: false, linecolor: 'lightgray', linewidth: 1, showticklabels: true, ticksuffix: suffix},
+        xaxis: {tickformat: '%H:%M'},
+        yaxis: {range: [-5, 40], showgrid: false, linecolor: 'lightgray', linewidth: 1, showticklabels: true, ticksuffix: suffix},
         paper_bgcolor: "rgba(0,0,0,0)",  // Transparent background
         plot_bgcolor: "rgba(0,0,0,0)",
         font: {
@@ -54,6 +66,7 @@ export function newBar(x: string[], y: number[], suffix = "p", min = -20, max = 
 };
 
 export function updateBar(x: string[], y: number[], suffix = "p", min = -20, max = 50) {
+    y = Object.assign(new Array(48), y);
     // Prepare new data
     var newData = {
         y: y,
@@ -74,7 +87,6 @@ export function updateBar(x: string[], y: number[], suffix = "p", min = -20, max
     // Update layout if needed (e.g., title or y-axis)
     Plotly.relayout('graphContainer', {
         'yaxis.ticksuffix': suffix,
-        'yaxis.range': [Math.min(0, Math.min(...y)), 40],
         'title.text': new Date(x[0]).toLocaleDateString('en-GB', {day: 'numeric', month: 'long', year: 'numeric'})
     });
 };
