@@ -4,8 +4,8 @@ import { Dexie } from 'dexie';
 declare const CookiesEuBanner: any;
 
 import { escapeHtml, validateInt, setCookie, getCookie, minMovingAverage, toLondonISOString, getLondonDayRangeAsDate } from "./components/utils.ts";
-import { getUnitData } from "./components/api_methods.ts";
-import { newBar, updateBar, newKPI, updateKPI } from "./components/graph.ts";
+import { getUnitData, getConsumptionData, initialiseUser } from "./components/api_methods.ts";
+import {updateBar, updateKPI } from "./components/graph.ts";
 import type { Appliance } from "./components/appliance_utils.ts";
 import { calculateApplianceCost, calculateApplianceDelayStart } from "./components/appliance_utils.ts";
 
@@ -21,14 +21,15 @@ const left = (document.getElementById("left") as HTMLInputElement);
 const left_floating = (document.getElementById("left-floating") as HTMLInputElement);
 let menuRotated = false;
 let isMobile = false;
+let selectedGraph = "unit";
 
 let db = new Dexie("userData");
 
 const schema = "valid_from,valid_to,value_inc_vat"
-const storesDef = Object.fromEntries(
+let storesDef = Object.fromEntries(
   regions.map(name => [name, schema])
 );
-
+storesDef.consumption = "interval_start,interval_end,consumption";
 db.version(1).stores(storesDef);
 
 async function getNextAvailable() {
@@ -38,6 +39,11 @@ async function getNextAvailable() {
     // @ts-ignore
     let last_date = new Date((await db[region].orderBy("valid_from").last()).valid_from);
     return (last_date.getTime() > tomorrow.getTime());
+};
+
+async function selectGraph(selected: string = "unit") {
+    selectedGraph = selected;
+    await updateGraphs(undefined, undefined);
 };
 
 function moveSelect(e: any) {
@@ -57,6 +63,29 @@ function moveSelect(e: any) {
         select.style.display = "inline-block";
     }
 };
+
+async function storeUserData() {
+    const apiKey = escapeHtml(((document.getElementById("APIKey") as HTMLInputElement)!).value);
+    const accountNumber = escapeHtml(((document.getElementById("accountNumber") as HTMLInputElement)!).value);
+    const rememberMe = ((document.getElementById("rememberMe") as HTMLInputElement)!).checked;
+    await initialiseUser(accountNumber, apiKey, rememberMe);
+};
+
+async function getUserData(pf: Date, pt: Date) {
+    // @ts-ignore
+    let res = await db.consumption.where("interval_start").between(pf.toISOString(), pt.toISOString(), true, false).toArray();
+    if (res.length === 0) {
+        let new_pf = new Date(pf.valueOf());
+        new_pf.setDate(pt.getDate() - 30);
+        res = (await getConsumptionData(new_pf, pt)).results;
+        // @ts-ignore
+        res = await db.consumption.bulkPut(res).then(() => {
+            // @ts-ignore
+            return db.consumption.where("interval_start").between(pf.toISOString(), pt.toISOString(), true, false).toArray();
+        });
+    };
+    return res;
+}
 
 async function getData(pf: Date, pt: Date, initial = false, direction = "right") {
     const t = new Date();
@@ -106,31 +135,42 @@ async function buttonCb(id: string) {
 };
 
 async function updateGraphs(initial = false, direction = "right") {
+
+    var min: [string, number];
+    var max: [string, number];
+    var average: [string, number];
+    let x, valid_from, suffix, specialSuffix, barRange, KPIRange, specialKPIRange;
     let dt_range = getLondonDayRangeAsDate(offset);
-    let res = await getData(dt_range.start, dt_range.end, initial, direction);
-    // @ts-ignore
-    let unit = res.map(a => a.value_inc_vat);
-    // @ts-ignore
-    let valid_from = res.map(a => a.valid_from);
-
-    const min_price = Math.round(Math.min(...unit) * 100 + Number.EPSILON) / 100;
-    const max_price = Math.round(Math.max(...unit) * 100 + Number.EPSILON) / 100;
-    // @ts-ignore
-    const average_price = Math.round((unit.reduce((partialSum, a) => partialSum + a, 0) / unit.length) * 100 + Number.EPSILON) / 100;
-
-    let london_valid_from = valid_from.map(toLondonISOString);
-
-    if (initial) {
-        newBar(london_valid_from, unit);
-        newKPI("min", min_price, average_price, "Minimum price");
-        newKPI("avg", average_price, average_price, "Average price");
-        newKPI("max", max_price,average_price, "Maximum price");
+    if (selectedGraph === "unit") {
+        let res: any[] = await getData(dt_range.start, dt_range.end, initial, direction);
+        x = res.map(a => a.value_inc_vat);
+        valid_from = res.map(a => a.valid_from);
+        min = ["Minimum price", Math.round(Math.min(...x) * 100 + Number.EPSILON) / 100 as number];
+        max = ["Maximum price", Math.round(Math.max(...x) * 100 + Number.EPSILON) / 100 as number];
+        average = ["Average price", (Math.round((x.reduce((partialSum, a) => partialSum + a, 0) / x.length) * 100 + Number.EPSILON) / 100) as number];
+        suffix = "p";
     } else {
-        updateBar(london_valid_from, unit);
-        updateKPI("min", min_price, average_price, "Minimum price");
-        updateKPI("avg", average_price, average_price, "Average price");
-        updateKPI("max", max_price,average_price, "Maximum price");
-    }
+        let res: any[] = await getUserData(dt_range.start, dt_range.end);
+        x = res.map(a => a.consumption);
+        min = ["Total consumption", x.reduce((partialSum, a) => partialSum + a, 0) as number];
+        max = ["Maximum consumption", Math.round(Math.max(...x) * 1000 * 2 + Number.EPSILON) as number];
+        average = ["Average consumption", Math.round((x.reduce((partialSum, a) => partialSum + a, 0) / x.length) * 1000 + Number.EPSILON) as number];
+        valid_from = res.map(a => a.interval_start);
+        specialSuffix = "W";
+        suffix = "kWh";
+        //@ts-ignore
+        barRange = [0, Math.max(1, max.at(1) / 1500)];
+        specialKPIRange = [0, 100];
+        KPIRange = [0, 3000];
+    };
+    let london_valid_from = valid_from.map(toLondonISOString);
+    updateBar(london_valid_from, x, suffix, undefined, undefined, initial, barRange);
+    //@ts-ignore
+    updateKPI("min", min.at(1), average.at(1), min.at(0), suffix, initial, specialKPIRange || KPIRange);
+    //@ts-ignore
+    updateKPI("avg", average.at(1), average.at(1), average.at(0), specialSuffix || suffix, initial, KPIRange);
+    //@ts-ignore
+    updateKPI("max", max.at(1), average.at(1), max.at(0), specialSuffix || suffix, initial, KPIRange);
 
     if (initial)
         document.getElementById("graphContainer")!.classList.add("show");
@@ -261,7 +301,6 @@ function closeModal() {
     let modalContent = modal!.querySelector(".modal-content");
     modalContent.classList.remove("show");
     modalContent.addEventListener("transitionend", () => {
-        console.log("transitioned");
         modal!.style.visibility = "hidden";
         if (modal!.id === "settingsModal" && isMobile)
             rotateMenuIcon(false);
@@ -306,6 +345,9 @@ function openModal(id: string) {
 
         await Promise.all(gather_futs);
 
+        let stored = await initialiseUser(); // do something with the result (I.E if found)
+        console.log(stored);
+
         left.addEventListener("click", () => { buttonCb('left') });
         left_floating.addEventListener("click", () => { buttonCb('left') });
         right.addEventListener("click", () => { buttonCb('right') });
@@ -335,7 +377,10 @@ function openModal(id: string) {
         (document.getElementById("newAppliance")!).addEventListener("click", () => { openModal("applianceModal") });
         (document.getElementById("addApplianceButton")!).addEventListener("click", () => { parseAppliance() });
         (document.getElementById("settingsButton")!).addEventListener("click", () => { openModal("settingsModal") });
-        
+        (document.getElementById("addDetailsButton")!).addEventListener("click", () => { storeUserData() });
+        (document.getElementById("selectUnit")!).addEventListener("click", () => { selectGraph("unit") });
+        (document.getElementById("selectConsumption")!).addEventListener("click", () => { selectGraph("consumption") });
+
         let settingsMenu = document.getElementById("settingsMenu")!;
         settingsMenu.addEventListener("click", () => { openModal("settingsModal") });
         settingsMenu.addEventListener("click", () => { rotateMenuIcon() });

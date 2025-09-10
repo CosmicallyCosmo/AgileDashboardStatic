@@ -180,15 +180,29 @@ body {
 }
 
 .gcolumn {
+    position: relative;
     opacity: 0;
     transform: scale(0.95);
     transition: opacity 0.5s ease, transform 0.5s ease;
-    height: 600px;
+    height: 800px;
     background-color: white;
     margin: 8px;
     width: 100%; /* Slightly smaller divs for three items per row */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow for a cleaner look */
     border-radius: 8px; /* Rounded corners */
+}
+
+.graphSelector {
+  position: absolute;
+  top: 20px;   /* distance from top */
+  right: 20px; /* distance from right */
+  display: flex;
+  gap: 5px;
+  z-index: 1; /* ensures controls sit above the graph */
+  background-color: white;
+  margin: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow for a cleaner look */
+  border-radius: 8px; /* Rounded corners */
 }
 
 .show {

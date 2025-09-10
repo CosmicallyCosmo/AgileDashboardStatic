@@ -56,11 +56,17 @@
       <div class="titlecol">
         <div><h2 class="quicksand-txt">Daily Agile Octopus prices</h2></div>
         <div><p>View the latest agile prices in your region below, including indicators on current price trends.</p></div>
+        <div><p>Data is currently for the <b>London</b> region on the <b>Some identifying code</b> version of the agile tariff. Update your details and add your API key to view your usage in the settings menu!</p></div>
       </div>
     </div>
     <div style="display: flex;">
       <div class="leftbcolumn navbutton hc"><button id="left" class="button">&lt;</button></div>
-      <div class="gcolumn mc gh plot" id="graphContainer"></div>
+      <div class="gcolumn mc gh plot" id="graphContainer">
+        <div class="graphSelector" id="graphSelector">
+          <button id="selectUnit">Unit data</button>
+          <button id="selectConsumption">Consumption data</button>
+        </div>
+      </div>
       <div class="rightbcolumn navbutton hc"><button id="right" class="button" disabled>&gt;</button></div>
     </div>
     <div class="floatingControls">
@@ -100,7 +106,10 @@
         <input type="text" id="accountNumber" name="accountNumber" class="quicksand-txt"><br>
         <label for="APIKey" class="quicksand-txt">API key </label><br>
         <input type="text" id="APIKey" name="APIKey" class="quicksand-txt"><br>
-        <p>Note: you're details & data isn't shared with us - all processing is done entirely in your browser.</p>
+        <label for="rememberMe" class="quicksand-txt">Remember details? </label><br>
+        <input type="checkbox" id="rememberMe" name="rememberMe"><br>
+        <p>Note: your details & data aren't shared with us - <b>all processing is done entirely in your browser.</b></p>
+        <p>Note: Selecting "remember me" will store your account number and JWT refresh token in your browser which is potentially inescure. <b>Your API key is never stored.</b></p>
         <input type="button" id="addDetailsButton" class = "addApplianceButton quicksand-txt" value="Get usage data">
         <p>
       </div>
