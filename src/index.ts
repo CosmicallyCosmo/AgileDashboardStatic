@@ -4,7 +4,7 @@ import { Dexie } from 'dexie';
 import type { Table } from 'dexie';
 declare const CookiesEuBanner: any;
 
-import { escapeHtml, validateInt, setCookie, getCookie, minMovingAverage, toLondonISOString, getLondonDayRangeAsDate } from "./components/utils.ts";
+import { escapeHtml, validateInt, setCookie, getCookie, minMovingAverage, getLondonDayRangeAsDate } from "./components/utils.ts";
 import { getUnitData, getConsumptionData, initialiseUser } from "./components/api_methods.ts";
 import { updateBar, updateKPI } from "./components/graph.ts";
 import type { BarProfile, GaugeProfile } from "./components/graph.ts";
@@ -29,6 +29,23 @@ type GaugeData = [string, number, GaugeProfile];
 
 
 const regions = ["A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "P"] as const;
+
+const regionMap: Record<string, string> = {
+  A: "Eastern England",
+  B: "East Midlands",
+  C: "London",
+  D: "Merseyside & Northern Wales",
+  E: "West Midlands",
+  F: "North Eastern England",
+  G: "North Western England",
+  H: "Southern England",
+  J: "South Eastern England",
+  K: "Southern Wales",
+  L: "South Western England",
+  M: "Yorkshire",
+  N: "Southern Scotland",
+  P: "Northern Scotland",
+};
 
 type RegionRow = {
   valid_from: Date;
@@ -86,8 +103,10 @@ async function selectGraph(selected: BarProfile = "unitBar") {
   selectedGraph = selected;
   if (selectedGraph === "unitBar") {
     (document.getElementById("selectUnit") as HTMLButtonElement)!.disabled = true;
+    (document.getElementById("selectConsumption") as HTMLButtonElement)!.disabled = false;
   } else {
     (document.getElementById("selectConsumption") as HTMLButtonElement)!.disabled = true;
+    (document.getElementById("selectUnit") as HTMLButtonElement)!.disabled = false;
   }
   await updateGraphs(undefined, undefined);
 };
@@ -140,6 +159,8 @@ async function getUserData(pf: Date, pt: Date) {
       return db.consumption.where("interval_start").between(pf.toISOString(), pt.toISOString(), true, false).toArray();
     });
     if (res.length === 0) {
+      openModal("noDataWarning");
+      return false;
       // No data, spawn no data div and disable buttons?
     }
   };
@@ -201,7 +222,9 @@ async function updateGraphs(initial = false, direction = "right") {
     var middleValue: GaugeData = ["Average price", (Math.round((data.reduce((partialSum, a) => partialSum + a, 0) / data.length) * 100 + Number.EPSILON) / 100) as number, "unitGauge"];
     var endValue: GaugeData = ["Maximum price", Math.round(Math.max(...data) * 100 + Number.EPSILON) / 100 as number, "unitGauge"];
   } else {
-    let res: any[] = await getUserData(dt_range.start, dt_range.end);
+    let res: false | any[] = await getUserData(dt_range.start, dt_range.end);
+    if (res === false)
+      return;
     var data = res.map(a => a.consumption);
     var startTimes = res.map(a => new Date(a.interval_start));
     var startValue: GaugeData = ["Total consumption", data.reduce((partialSum, a) => partialSum + a, 0) as number, "consumptionGauge"];
@@ -355,9 +378,9 @@ function openModal(id: string) {
 (async () => {
 
   document.addEventListener("DOMContentLoaded", async function () {
-    ((document.getElementById("region") as HTMLInputElement)!).value = getCookie("region", "A");
-
     region = getCookie("region", "A");
+    (document.getElementById("region") as HTMLInputElement)!.value = region;
+    (document.getElementById("selectedRegion") as HTMLSpanElement).textContent = regionMap[region];
 
     new CookiesEuBanner(function () {
       appliances = JSON.parse(localStorage.getItem("appliances")!) || appliances;
@@ -382,8 +405,11 @@ function openModal(id: string) {
 
     await Promise.all(gather_futs);
 
-    let stored = await initialiseUser(); // do something with the result (I.E if found)
-    console.log(stored);
+    if (await initialiseUser()) {
+      (document.getElementById("selectConsumption") as HTMLButtonElement).disabled = false;
+    } else {
+      localStorage.removeItem("userInfo");
+    }
 
     left.addEventListener("click", () => { buttonCb('left') });
     left_floating.addEventListener("click", () => { buttonCb('left') });
@@ -392,6 +418,7 @@ function openModal(id: string) {
 
     document.getElementById("region")!.addEventListener("change", async (event) => {
       region = ((event.target as HTMLInputElement)!).value as Region;
+      (document.getElementById("selectedRegion") as HTMLSpanElement).textContent = regionMap[region];
       setCookie("region", ((event.target as HTMLInputElement)!).value, 365);
 
       let gather_futs: Promise<void>[] = [];

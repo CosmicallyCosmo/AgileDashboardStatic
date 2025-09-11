@@ -6,7 +6,7 @@ import { escapeHtml } from "./utils.ts";
 import { request, gql } from 'graphql-request';
 import type { Params, UserInfo, ObtainKrakenTokenResponse, MeterPoint } from './api_types.ts';
 
-export let userInfo: UserInfo = { accountNumber: undefined }; // Move to API methods?
+export let userInfo: UserInfo = { accountNumber: undefined };
 
 async function get(url: string, params?: Params, auth = false, userInfo?: UserInfo) {
   let now = new Date();
@@ -15,8 +15,12 @@ async function get(url: string, params?: Params, auth = false, userInfo?: UserIn
   if (auth) {
     if (!userInfo)
       throw new Error("Tried to call get with auth without passing userInfo!");
-    if (!userInfo.token || now.getTime() > (userInfo.token.expiry).getTime())
-      await getToken();
+    if (!userInfo.token || now.getTime() > (userInfo.token.expiry).getTime()) {
+      let res = await getToken();
+      if (!res) {
+        return {};
+      };
+    };
     params.headers.set('Authorization', `${userInfo.token!.token}`);
   }
   let response = await fetch(url, params);
@@ -25,7 +29,7 @@ async function get(url: string, params?: Params, auth = false, userInfo?: UserIn
     return json;
   } else {
     return {};
-  }
+  };
 }
 
 export async function initialiseUser(accountNumber?: string, APIKey?: string, rememberMe = false) {
@@ -37,10 +41,12 @@ export async function initialiseUser(accountNumber?: string, APIKey?: string, re
     res.token!.expiry = new Date(res.token!.expiry);
     userInfo = res;
     let isValid = await getToken();
+    isValid = await getMeter();
     return isValid;
   };
   userInfo.accountNumber = accountNumber;
   let isValid = await getToken(APIKey);
+  isValid = await getMeter();
   if (isValid) {
     if (rememberMe) {
       new CookiesEuBanner(function () {
@@ -59,10 +65,9 @@ export async function getToken(APIKey?: string) {
   if (APIKey) {
     authMethod = { APIKey: APIKey };
   } else {
-    console.log(userInfo);
-    console.log(userInfo.refreshToken!.expiry);
-    if (!userInfo.refreshToken || now.getTime() > (userInfo.refreshToken.expiry).getTime()) { // Check if not preesnt or expired
-      // panic!!! Need some UI magic here.
+    if (!userInfo.refreshToken || now.getTime() > (userInfo.refreshToken.expiry).getTime()) {  // Check if not preesnt or expired
+      localStorage.removeItem("userInfo");
+      return false;
     };
     authMethod = { refreshToken: userInfo.refreshToken!.token };
   };
@@ -96,14 +101,18 @@ export async function getUnitData(region: string, period_from: Date, period_to: 
 
 export async function getMeter() {
   const url = `https://api.octopus.energy/v1/accounts/${escapeHtml(userInfo.accountNumber!)}`;
-  let res = await get(url, undefined, true, userInfo) as MeterPoint;
-  let property = res.properties.at(0);
-  let electricity_meter_point = property?.electricity_meter_points.at(0);
-  let mpan = electricity_meter_point!.mpan;
-  let meter = electricity_meter_point?.meters.at(-1);
-  let serialNumber = meter!.serial_number;
-  userInfo.meter = { mpan: mpan, serialNumber: serialNumber };
-  return userInfo;
+  try {
+    let res = await get(url, undefined, true, userInfo) as MeterPoint;
+    let property = res.properties.at(0);
+    let electricity_meter_point = property?.electricity_meter_points.at(0);
+    let mpan = electricity_meter_point!.mpan;
+    let meter = electricity_meter_point?.meters.at(-1);
+    let serialNumber = meter!.serial_number;
+    userInfo.meter = { mpan: mpan, serialNumber: serialNumber };
+    return true;
+  } catch (error) {
+    return false;
+  };
 };
 
 export async function getConsumptionData(period_from: Date, period_to: Date) {

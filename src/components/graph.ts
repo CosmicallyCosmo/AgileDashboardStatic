@@ -2,7 +2,6 @@
 
 declare const Plotly: any;
 
-import { color } from "d3";
 import { normalize, getJetColor } from "./utils.ts";
 
 type Range = [number, number];

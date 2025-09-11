@@ -56,7 +56,7 @@
       <div class="titlecol">
         <div><h2 class="quicksand-txt">Daily Agile Octopus prices</h2></div>
         <div><p>View the latest agile prices in your region below, including indicators on current price trends.</p></div>
-        <div><p>Data is currently for the <b>London</b> region on the <b>Some identifying code</b> version of the agile tariff. Update your details and add your API key to view your usage in the settings menu!</p></div>
+        <div><p>Data is currently for the <b><span id="selectedRegion">Eastern England</span></b> region on the <b><span id="productCode">AGILE-24-10-01</span></b> version of the agile tariff. Update your details and add your API key to view your usage in the settings menu!</p></div>
       </div>
     </div>
     <div style="display: flex;">
@@ -65,6 +65,11 @@
         <div class="graphSelector" id="graphSelector">
           <button id="selectUnit" disabled>Unit data</button>
           <button id="selectConsumption" disabled>Consumption data</button>
+          <div id="noDataWarning" class="modal">
+            <div id="modalContent" class="modal-content modalSmall">
+              <p class="quicksand-txt">No data for today... we're trying really hard to get it!</p>
+            </div>
+          </div>
         </div>
       </div>
       <div class="rightbcolumn navbutton hc"><button id="right" class="button" disabled>&gt;</button></div>
