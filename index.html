@@ -63,8 +63,8 @@
       <div class="leftbcolumn navbutton hc"><button id="left" class="button">&lt;</button></div>
       <div class="gcolumn mc gh plot" id="graphContainer">
         <div class="graphSelector" id="graphSelector">
-          <button id="selectUnit">Unit data</button>
-          <button id="selectConsumption">Consumption data</button>
+          <button id="selectUnit" disabled>Unit data</button>
+          <button id="selectConsumption" disabled>Consumption data</button>
         </div>
       </div>
       <div class="rightbcolumn navbutton hc"><button id="right" class="button" disabled>&gt;</button></div>
@@ -79,9 +79,9 @@
         <p class="quicksand-txt">Add a widget to view the cheapest time to run various household appliances.</p>
         <button id="newAppliance">Add new appliance</button>
       </div>
-      <div class="static" id="min"></div>
-      <div class="static" id="avg"></div>
-      <div class="static" id="max"></div>
+      <div class="static" id="start-kpi"></div>
+      <div class="static" id="middle-kpi"></div>
+      <div class="static" id="end-kpi"></div>
     </div>
     <div id="applianceModal" class="modal">
       <div class="modal-content modalSmall">
@@ -111,6 +111,7 @@
         <p>Note: your details & data aren't shared with us - <b>all processing is done entirely in your browser.</b></p>
         <p>Note: Selecting "remember me" will store your account number and JWT refresh token in your browser which is potentially inescure. <b>Your API key is never stored.</b></p>
         <input type="button" id="addDetailsButton" class = "addApplianceButton quicksand-txt" value="Get usage data">
+        <p style="color: red; display: none" id="settingsErr">Error: invalid details - please double check!</p>
         <p>
       </div>
     </div>     
