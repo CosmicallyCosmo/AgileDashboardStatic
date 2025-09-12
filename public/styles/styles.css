@@ -197,8 +197,8 @@ body {
     transform: scale(1);
   }
 
-#graphContainer .plotly .cursor-pointer {
-  cursor: default !important;
+#graphContainer * {
+    cursor: default !important;
 }
 
 .rightbcolumn {   

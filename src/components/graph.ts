@@ -18,7 +18,7 @@ const GaugeProfileSettings: Record<GaugeProfile, GaugeProfileSetting> = {
 }
 
 const BarProfileSettings: Record<BarProfile, BarProfileSetting> = {
-  unitBar: { titlePrefix: "Unit data for ", colourRange: [-20, 50], dataRange: [-5, 40], suffix: "p" },
+  unitBar: { titlePrefix: "Tariff data for ", colourRange: [-20, 50], dataRange: [-5, 40], suffix: "p" },
   consumptionBar: { titlePrefix: "Consumption data for ", colourRange: [-2, 2], dataRange: [0, 2], suffix: "kWh" },
 };
 
@@ -49,6 +49,7 @@ export function newBar(x: Date[], y: number[], titlePrefix: string, colourRange:
   }];
 
   let layout = {
+    dragmode: false,  // Disable zoom/pan
     autosize: true,
     xaxis: { tickformat: '%H:%M' },
     yaxis: { range: dataRange, showgrid: false, linecolor: 'lightgray', linewidth: 1, showticklabels: true, ticksuffix: suffix },
@@ -76,7 +77,6 @@ export function newBar(x: Date[], y: number[], titlePrefix: string, colourRange:
     autosize: true,
     showlegend: false,
     clickmode: 'none',
-    dragmode: false,  // Disable zoom/pan
     displayModeBar: false,  // Disable the modebar (zoom, reset, etc.)
     showTips: false,
   };
