@@ -102,28 +102,34 @@ async function getNextAvailable() {
 async function selectGraph(selected: BarProfile = "unitBar") {
   selectedGraph = selected;
   if (selectedGraph === "unitBar") {
-    (document.getElementById("selectUnit") as HTMLButtonElement)!.disabled = true;
-    (document.getElementById("selectConsumption") as HTMLButtonElement)!.disabled = false;
+    (document.getElementById("selectUnit") as HTMLButtonElement)!.classList.add("noHover");
+    (document.getElementById("selectConsumption") as HTMLButtonElement)!.classList.remove("noHover");
   } else {
-    (document.getElementById("selectConsumption") as HTMLButtonElement)!.disabled = true;
-    (document.getElementById("selectUnit") as HTMLButtonElement)!.disabled = false;
+    (document.getElementById("selectConsumption") as HTMLButtonElement)!.classList.add("noHover");
+    (document.getElementById("selectUnit") as HTMLButtonElement)!.classList.remove("noHover");
   }
   await updateGraphs(undefined, undefined);
 };
 
 function moveSelect(e: any) {
   let select = document.getElementById("region") as HTMLSelectElement;
-  let desktopContainer = document.getElementById("navSelect") as HTMLDivElement;
-  let mobileContainer = document.getElementById("settingsModal")!.querySelector(".modal-content") as HTMLDivElement;
+  let graphSelector = document.getElementById("graphSelector") as HTMLDivElement;
+  graphSelector.remove();
+  let graphSelectorDesktopContainer = document.getElementById("graphContainer") as HTMLDivElement;
+  let graphSelectorMobileContainer = document.getElementById("floatingControls") as HTMLDivElement;
+  let selectDesktopContainer = document.getElementById("navSelect") as HTMLDivElement;
+  let selectMobileContainer = document.getElementById("settingsModal")!.querySelector(".modal-content") as HTMLDivElement;
   if (e.matches) {
     // Mobile
     let br = document.createElement("br");
-    mobileContainer.prepend(select, br, br);
+    selectMobileContainer.prepend(select, br, br);
+    graphSelectorMobileContainer.append(graphSelector);
     select.style.display = "inline-block";
     isMobile = true;
   } else {
-    desktopContainer.appendChild(select);
-    desktopContainer.style.visibility = "visible";
+    selectDesktopContainer.appendChild(select);
+    graphSelectorDesktopContainer.prepend(graphSelector);
+    selectDesktopContainer.style.visibility = "visible";
     select.style.display = "inline-block";
   }
 };
@@ -143,23 +149,36 @@ async function storeUserData() {
     return;
   }
   document.getElementById("settingsErr")!.style.display = "none";
-  (document.getElementById("selectConsumption") as HTMLButtonElement).disabled = false;
+  (document.getElementById("selectConsumption") as HTMLButtonElement).classList.remove("noHover");
   closeModal();
 };
 
 async function getUserData(pf: Date, pt: Date) {
-  let today = (new Date()).toDateString();
+  let now = (new Date());
+    let errorMessageContainer = document.getElementById("noDataWarningMessage") as HTMLParagraphElement;
+    console.log(pf.toDateString(), now, pf.toDateString() > now.toDateString());
+    if (!(pf.toDateString() === now.toDateString()) && pf.getTime() > now.getTime()) {
+      errorMessageContainer.innerText = "Unless you have a time machine, there ain't going to be data!";
+      openModal("noDataWarning");
+      await buttonCb("left");
+      return false;
+    }
   let res = await db.consumption.where("interval_start").between(pf.toISOString(), pt.toISOString(), true, false).toArray();
   if (res.length < 48) {
     let new_pf = new Date(pf.valueOf());
-    if (pf.toDateString() !== today)
+    if (pf.toDateString() !== now.toDateString())
       new_pf.setDate(pt.getDate() - 30);
     res = (await getConsumptionData(new_pf, pt)).results;
     res = await db.consumption.bulkPut(res).then(() => {
       return db.consumption.where("interval_start").between(pf.toISOString(), pt.toISOString(), true, false).toArray();
     });
     if (res.length === 0) {
-      openModal("noDataWarning");
+      if (pf.toDateString() === now.toDateString()) {
+          openModal("noDataWarning");
+      } else {
+        errorMessageContainer.innerText = "Missing data for this day - Octopus WTF?!";
+          openModal("noDataWarning");
+      };
       return false;
       // No data, spawn no data div and disable buttons?
     }
@@ -405,7 +424,7 @@ function openModal(id: string) {
     await Promise.all(gather_futs);
 
     if (await initialiseUser()) {
-      (document.getElementById("selectConsumption") as HTMLButtonElement).disabled = false;
+      (document.getElementById("selectConsumption") as HTMLButtonElement).classList.remove("noHover");
     } else {
       localStorage.removeItem("userInfo");
     }

@@ -63,20 +63,22 @@
       <div class="leftbcolumn navbutton hc"><button id="left" class="button">&lt;</button></div>
       <div class="gcolumn mc gh plot" id="graphContainer">
         <div class="graphSelector" id="graphSelector">
-          <button id="selectUnit" disabled>Unit data</button>
-          <button id="selectConsumption" disabled>Consumption data</button>
-          <div id="noDataWarning" class="modal">
-            <div class="modal-content modalSmall">
-              <p class="quicksand-txt">No data for today... we're trying really hard to get it!</p>
-            </div>
+          <button id="selectUnit" class="selectGraphButton left-select-button noHover">Tariff</button>
+          <button id="selectConsumption" class="selectGraphButton right-select-button noHover">Consumption</button>
+        </div>
+        <div id="noDataWarning" class="modal">
+          <div class="modal-content modalSmall">
+            <p class="quicksand-txt" id="noDataWarningMessage">No data for today... we're trying really hard to get it!</p>
           </div>
         </div>
       </div>
       <div class="rightbcolumn navbutton hc"><button id="right" class="button" disabled>&gt;</button></div>
     </div>
-    <div class="floatingControls">
+    <div id="floatingControls" class="floatingControls">
+      <div>
       <button id="left-floating" class="button">&lt;</button>
       <button id="right-floating" class="button" disabled>&gt;</button>
+      </div>
     </div>
     <div class="blockGrid" id="dynamicBlockGrid">
       <div class="appliance static">
