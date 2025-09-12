@@ -237,9 +237,9 @@ async function updateGraphs(initial = false, direction = "right") {
     var res: any[] = await getData(dt_range.start, dt_range.end, initial, direction);
     var data = res.map(a => a.value_inc_vat);
     var startTimes = res.map(a => new Date(a.valid_from));
-    var startValue: GaugeData = ["Minimum price", Math.round(Math.min(...data) * 100 + Number.EPSILON) / 100 as number, "unitGauge"];
-    var middleValue: GaugeData = ["Average price", (Math.round((data.reduce((partialSum, a) => partialSum + a, 0) / data.length) * 100 + Number.EPSILON) / 100) as number, "unitGauge"];
-    var endValue: GaugeData = ["Maximum price", Math.round(Math.max(...data) * 100 + Number.EPSILON) / 100 as number, "unitGauge"];
+    var startValue: GaugeData = ["Min price", Math.round(Math.min(...data) * 100 + Number.EPSILON) / 100 as number, "unitGauge"];
+    var middleValue: GaugeData = ["Avg price", (Math.round((data.reduce((partialSum, a) => partialSum + a, 0) / data.length) * 100 + Number.EPSILON) / 100) as number, "unitGauge"];
+    var endValue: GaugeData = ["Max price", Math.round(Math.max(...data) * 100 + Number.EPSILON) / 100 as number, "unitGauge"];
   } else {
     let res: false | any[] = await getUserData(dt_range.start, dt_range.end);
     if (res === false)
@@ -247,8 +247,8 @@ async function updateGraphs(initial = false, direction = "right") {
     var data = res.map(a => a.consumption);
     var startTimes = res.map(a => new Date(a.interval_start));
     var startValue: GaugeData = ["Total consumption", data.reduce((partialSum, a) => partialSum + a, 0) as number, "consumptionGauge"];
-    var middleValue: GaugeData = ["Average consumption", Math.round((data.reduce((partialSum, a) => partialSum + a, 0) / data.length) * 1000 + Number.EPSILON) as number, "powerGauge"];
-    var endValue: GaugeData = ["Maximum consumption", Math.round(Math.max(...data) * 1000 * 2 + Number.EPSILON) as number, "powerGauge"];
+    var middleValue: GaugeData = ["Avg consumption", Math.round((data.reduce((partialSum, a) => partialSum + a, 0) / data.length) * 1000 + Number.EPSILON) as number, "powerGauge"];
+    var endValue: GaugeData = ["Max consumption", Math.round(Math.max(...data) * 1000 * 2 + Number.EPSILON) as number, "powerGauge"];
   };
   updateBar(startTimes, data, selectedGraph, initial);
   updateKPI("start-kpi", ...startValue, initial);

@@ -8,17 +8,18 @@ type Range = [number, number];
 type GaugeId = "start-kpi" | "middle-kpi" | "end-kpi";
 export type GaugeProfile = "powerGauge" | "consumptionGauge" | "unitGauge";
 export type BarProfile = "unitBar" | "consumptionBar";
-type ProfileSetting = { colourRange: Range, dataRange: Range, suffix: string };
+type BarProfileSetting = { titlePrefix: string, colourRange: Range, dataRange: Range, suffix: string };
+type GaugeProfileSetting = { colourRange: Range, dataRange: Range, suffix: string };
 
-const GaugeProfileSettings: Record<GaugeProfile, ProfileSetting> = {
+const GaugeProfileSettings: Record<GaugeProfile, GaugeProfileSetting> = {
   unitGauge: { colourRange: [-20, 50], dataRange: [-5, 40], suffix: "p" },
   powerGauge: { colourRange: [-500, 3500], dataRange: [0, 3000], suffix: "W" },
   consumptionGauge: { colourRange: [-10, 40], dataRange: [0, 50], suffix: "kWh" },
 }
 
-const BarProfileSettings: Record<BarProfile, ProfileSetting> = {
-  unitBar: { colourRange: [-20, 50], dataRange: [-5, 40], suffix: "p" },
-  consumptionBar: { colourRange: [-2, 2], dataRange: [0, 2], suffix: "kWh" },
+const BarProfileSettings: Record<BarProfile, BarProfileSetting> = {
+  unitBar: { titlePrefix: "Unit data for ", colourRange: [-20, 50], dataRange: [-5, 40], suffix: "p" },
+  consumptionBar: { titlePrefix: "Consumption data for ", colourRange: [-2, 2], dataRange: [0, 2], suffix: "kWh" },
 };
 
 function generateTimes() {
@@ -31,7 +32,7 @@ function generateTimes() {
   return times;
 }
 
-export function newBar(x: Date[], y: number[], colourRange: Range, dataRange: Range, suffix: string) {
+export function newBar(x: Date[], y: number[], titlePrefix: string, colourRange: Range, dataRange: Range, suffix: string) {
   // TODO: pad out the values so the new day has 48 then normalize etc
   y = Object.assign(new Array(48), y);
   var data = [{
@@ -59,7 +60,7 @@ export function newBar(x: Date[], y: number[], colourRange: Range, dataRange: Ra
       color: '#333'
     },
     title: {
-      text: new Date(x[0]).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
+      text: titlePrefix + new Date(x[0]).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
       font: { size: 20 }
     },
     margin: {
@@ -84,9 +85,9 @@ export function newBar(x: Date[], y: number[], colourRange: Range, dataRange: Ra
 };
 
 export function updateBar(x: Date[], y: number[], type: BarProfile, initial = false) {
-  const { colourRange, dataRange, suffix }: ProfileSetting = BarProfileSettings[type];
+  const {titlePrefix, colourRange, dataRange, suffix }: BarProfileSetting = BarProfileSettings[type];
   if (initial) {
-    newBar(x, y, colourRange, dataRange, suffix);
+    newBar(x, y, titlePrefix, colourRange, dataRange, suffix);
     return;
   };
   y = Object.assign(new Array(48), y);
@@ -110,7 +111,7 @@ export function updateBar(x: Date[], y: number[], type: BarProfile, initial = fa
   Plotly.relayout('graphContainer', {
     'yaxis.range': dataRange,
     'yaxis.ticksuffix': suffix,
-    'title.text': x.at(-1)!.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
+    'title.text': titlePrefix + x.at(-1)!.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
   });
 };
 
@@ -163,7 +164,7 @@ export function updateKPI(
   initial = false,
 ): void {
 
-  const { colourRange, dataRange, suffix }: ProfileSetting = GaugeProfileSettings[type];
+  const { colourRange, dataRange, suffix }: GaugeProfileSetting = GaugeProfileSettings[type];
 
   if (initial) {
     newKPI(id, title, value, colourRange, dataRange, suffix);
