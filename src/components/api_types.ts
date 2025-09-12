@@ -3,6 +3,7 @@
 export type Params = {
     method: string;
     headers: Headers;
+    cache: RequestCache;
 }
 
 export type JWTToken = {

@@ -114,7 +114,7 @@ async function selectGraph(selected: BarProfile = "unitBar") {
 function moveSelect(e: any) {
   let select = document.getElementById("region") as HTMLSelectElement;
   let desktopContainer = document.getElementById("navSelect") as HTMLDivElement;
-  let mobileContainer = document.getElementById("modalContent") as HTMLDivElement;
+  let mobileContainer = document.getElementById("settingsModal")!.querySelector(".modal-content") as HTMLDivElement;
   if (e.matches) {
     // Mobile
     let br = document.createElement("br");
@@ -389,7 +389,6 @@ function openModal(id: string) {
     let gather_futs: Promise<void>[] = [];
 
     await updateGraphs(true);
-
     next_available = (await getNextAvailable());
 
     right.disabled = !next_available;
