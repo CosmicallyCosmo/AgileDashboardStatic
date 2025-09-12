@@ -100,13 +100,15 @@ async function getNextAvailable() {
 };
 
 async function selectGraph(selected: BarProfile = "unitBar") {
+  let unitButtonClassList = (document.getElementById("selectUnit") as HTMLButtonElement)!.classList;
+  let consumptionClassList = (document.getElementById("selectConsumption") as HTMLButtonElement)!.classList;
   selectedGraph = selected;
   if (selectedGraph === "unitBar") {
-    (document.getElementById("selectUnit") as HTMLButtonElement)!.classList.add("noHover");
-    (document.getElementById("selectConsumption") as HTMLButtonElement)!.classList.remove("noHover");
+    unitButtonClassList.add("noHover", "unSelectedGraphType");
+    consumptionClassList.remove("noHover", "unSelectedGraphType");
   } else {
-    (document.getElementById("selectConsumption") as HTMLButtonElement)!.classList.add("noHover");
-    (document.getElementById("selectUnit") as HTMLButtonElement)!.classList.remove("noHover");
+    unitButtonClassList.remove("noHover", "unSelectedGraphType");
+    consumptionClassList.add("noHover", "unSelectedGraphType");
   }
   await updateGraphs(undefined, undefined);
 };
@@ -115,6 +117,7 @@ function moveSelect(e: any) {
   let select = document.getElementById("region") as HTMLSelectElement;
   let graphSelector = document.getElementById("graphSelector") as HTMLDivElement;
   graphSelector.remove();
+  graphSelector.style.visibility = "visible";
   let graphSelectorDesktopContainer = document.getElementById("graphContainer") as HTMLDivElement;
   let graphSelectorMobileContainer = document.getElementById("floatingControls") as HTMLDivElement;
   let selectDesktopContainer = document.getElementById("navSelect") as HTMLDivElement;

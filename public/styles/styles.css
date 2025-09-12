@@ -184,7 +184,7 @@ body {
     opacity: 0;
     transform: scale(0.95);
     transition: opacity 0.5s ease, transform 0.5s ease;
-    height: 800px;
+    height: 600px;
     background-color: white;
     margin: 8px;
     width: 100%; /* Slightly smaller divs for three items per row */
@@ -402,6 +402,7 @@ clear: both;
   top: 20px;   /* distance from top */
   right: 20px; /* distance from right */
   display: flex;
+  align-items: center;
   gap: 5px;
   z-index: 1; /* ensures controls sit above the graph */
   background-color: transparent;
@@ -414,6 +415,11 @@ clear: both;
   color: white;
   font-size: 16px;
   cursor: pointer;
+  transition: padding 0.1s ease;
+}
+
+.unSelectedGraphType {
+  padding: 8px 20px;
 }
 
 .selectGraphButton:hover {
