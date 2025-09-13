@@ -1,15 +1,27 @@
 "use strict";
 
-export function calculateApplianceCost(appliance: any, avg_cost: number) {
-    let cost = avg_cost * (appliance.power / 1000) * (appliance.hours + (appliance.minutes / 60));
+import type { TimeFormat } from "./utils.ts";
+
+export interface Appliance {
+        id: string,
+        name: string,
+        power: number,
+        runTime: TimeFormat,
+        startAt?: Date,
+        delayStart?: TimeFormat,
+        cost?: number,
+        };
+
+export function calculateApplianceCost(appliance: Appliance, avg_cost: number) {
+    const { hours, minutes } = appliance.runTime;
+    let cost = avg_cost * (appliance.power / 1000) * (hours + (minutes / 60));
     cost = Math.round(cost * 10 + Number.EPSILON) / 10;
-    return cost;
+    appliance.cost = cost;
 };
 
-export function calculateApplianceDelayStart(startISODatetime: string) {
+export function calculateApplianceDelayStart(appliance: Appliance) {
     const currentDatetime = new Date();
-    const startDatetime = new Date(startISODatetime);
-    let diff = startDatetime.getTime() - currentDatetime.getTime();
+    let diff = appliance.startAt!.getTime() - currentDatetime.getTime();
     let hours = Math.floor(diff / 1000 / 60 / 60);
     diff -= hours * 1000 * 60 * 60;
     let minutes = Math.floor(diff / 1000 / 60);
@@ -22,5 +34,5 @@ export function calculateApplianceDelayStart(startISODatetime: string) {
     if (hours < 0) {
        hours = hours + 24;
     }
-    return `${hours}h ${minutes}m`;
+    appliance.delayStart = {hours: hours, minutes: minutes};
 };

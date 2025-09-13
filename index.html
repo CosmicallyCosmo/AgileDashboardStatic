@@ -10,8 +10,8 @@
     <script defer src="/packages/plotly-custom.min.js"></script>
     <script defer type="module" src="/src/index.ts?v=12"></script>
     <link rel="stylesheet" href="/styles/styles.css?v=12">
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=warning" as="style">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=warning"/>
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" as="style">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=menu,settings,warning"/>
   </head>
   <body>
     <div id="cookies-eu-banner" style="display: none;">
@@ -19,15 +19,17 @@
       <button id="cookies-eu-reject">Reject</button>
       <button id="cookies-eu-accept">Accept</button>
     </div>
-    <div style="display: flex;">
-      <div class="topnav sml" id="mytopnav">
-        <div class="navlink hc" style="justify-content: left;"><a href="https://www.cosmicallycosmo.com/linkedin">About me</a></div>
-        <div class="logo"><h1 class="ts quicksand-txt">Agile Dashboard</h1></div>
-        <div class="navlink hc" style="justify-content: right;"><a href="https://ko-fi.com/agiledashboard">Blog</a></div>
+    <div class="navGrid" id="mytopnav">
+      <div class="navigation">
+        <h1 class="quicksand-txt">Agile Dashboard</h1>
+        <ul class="hc">
+          <li><a href="https://www.cosmicallycosmo.com/linkedin" class="quicksand-txt">About me</a></li>
+          <li><a href="https://ko-fi.com/agiledashboard" class="quicksand-txt">Blog</a></li> 
+        </ul>
       </div>
-      <div class="navselect sms">
-        <label for="region" class="sr-only">Choose a region:</label>
-        <select class="selectn" id="region" name="region" autocomplete="off">
+      <div id="navSelect" class="navSelect hc" style="visibility: hidden;">
+        <label for="region" style="display: none;">Choose a region:</label>
+        <select id="region" name="region" autocomplete="off" style="display:none;">
           <option value="" selected hidden></option>
           <option value="A">Eastern England</option>
           <option value="B">East Midlands</option>
@@ -45,35 +47,52 @@
           <option value="P">Northern Scotland</option>
         </select>
       </div>
+      <div class="navSettings" style="margin-right: 0;">
+        <span class="material-symbols-outlined settings-span hc" id="settingsButton">settings</span>
+        <span class="material-symbols-outlined menu-span sc" id="settingsMenu" style="display: none;">menu</span>
+      </div>
     </div>
     <div>
       <div class="titlecol">
-        <div><h1 class="quicksand-txt">Daily Agile Octopus prices</h1></div>
+        <div><h2 class="quicksand-txt">Daily Agile Octopus prices</h2></div>
         <div><p>View the latest agile prices in your region below, including indicators on current price trends.</p></div>
+        <div><p>Data is currently for the <b><span id="selectedRegion">Eastern England</span></b> region on the <b><span id="productCode">AGILE-24-10-01</span></b> version of the agile tariff. Update your details and add your API key to view your usage in the settings menu!</p></div>
       </div>
     </div>
     <div style="display: flex;">
       <div class="leftbcolumn navbutton hc"><button id="left" class="button">&lt;</button></div>
-      <div class="gcolumn mc" id="graphContainer"></div>
+      <div class="gcolumn mc gh plot" id="graphContainer">
+        <div class="graphSelector" id="graphSelector" style="visibility: hidden;">
+          <button id="selectUnit" class="selectGraphButton left-select-button noHover quicksand-txt">Tariff</button>
+          <button id="selectConsumption" class="selectGraphButton right-select-button noHover quicksand-txt">Consumption</button>
+        </div>
+        <div id="noDataWarning" class="modal">
+          <div class="modal-content modalSmall">
+            <p class="quicksand-txt" id="noDataWarningMessage">No data for today... we're trying really hard to get it!</p>
+          </div>
+        </div>
+      </div>
       <div class="rightbcolumn navbutton hc"><button id="right" class="button" disabled>&gt;</button></div>
     </div>
-    <div class="floatingControls">
+    <div id="floatingControls" class="floatingControls">
+      <div>
       <button id="left-floating" class="button">&lt;</button>
       <button id="right-floating" class="button" disabled>&gt;</button>
+      </div>
     </div>
-    <div class= "blockGrid" id="dynamicBlockGrid">
-      <div class="appliance">
+    <div class="blockGrid" id="dynamicBlockGrid">
+      <div class="appliance static">
         <p class="quicksand-txt new hm hc"><b>New!</b><p>
         <p class="quicksand-txt">Add a widget to view the cheapest time to run various household appliances.</p>
         <button id="newAppliance">Add new appliance</button>
       </div>
-      <div id="min"></div>
-      <div id="avg"></div>
-      <div id="max"></div>
+      <div class="static" id="start-kpi"></div>
+      <div class="static" id="middle-kpi"></div>
+      <div class="static" id="end-kpi"></div>
     </div>
-    <div id="newApplianceModal" class="modal">
+    <div id="applianceModal" class="modal">
       <div class="modal-content modalSmall">
-        <span class="close" id="closeModal">&times;</span>
+        <span class="close closeModal">&times;</span>
         <!-- Would be nice to have some easy default values for common appliances -->
         <label for="appName" class="quicksand-txt">Appliance name </label><br>
         <input type="text" id="appName" name="appName" value="Tumble dryer" class="quicksand-txt"><br>
@@ -87,6 +106,23 @@
         <p style="color: red; display: none" id="applianceErr">Error: invalid form parameters - please double check!</p>
       </div>
     </div>
+    <div id="settingsModal" class="modal">
+      <div class="modal-content modalSmall">
+        <span class="close closeModal">&times;</span>
+        <p class="quicksand-txt" style="font-size: 18px;"><b style="color: red;">Experimental</b> - view your usage data!</p>
+        <label for="accountNumber" class="quicksand-txt">Account number </label><br>
+        <input type="text" id="accountNumber" name="accountNumber" class="quicksand-txt"><br>
+        <label for="APIKey" class="quicksand-txt">API key </label><br>
+        <input type="text" id="APIKey" name="APIKey" class="quicksand-txt"><br>
+        <label for="rememberMe" class="quicksand-txt">Remember details? </label><br>
+        <input type="checkbox" id="rememberMe" name="rememberMe"><br>
+        <p class="quicksand-txt">Note: your details & data aren't shared with us - <b>all processing is done entirely in your browser.</b></p>
+        <p class="quicksand-txt">Note: Selecting <em>remember details</em> will store your account number and JWT refresh token in your browser which is potentially inescure. <b>Your API key is never stored.</b></p>
+        <input type="button" id="addDetailsButton" class = "addApplianceButton quicksand-txt" value="Get usage data">
+        <p style="color: red; display: none" id="settingsErr">Error: invalid details - please double check!</p>
+        <p>
+      </div>
+    </div>     
     <div class='faq'>
       <input id='faq-a' type='checkbox'>
       <label for='faq-a'>
@@ -120,7 +156,18 @@
       </label>
     </div>
     <div class="footer quicksand-txt">
-      <p>Always verify the content produced by this website, we are not liable financially or otherwise for misleading or incorrect data.<br>© William Anderson 2025. This site is a work in progress - more features are coming! We are not affiliated with Octopus Energy in any way.</p>
+      <p>Always verify the content produced by this website, we are not liable financially or otherwise for misleading or incorrect data.<br><br>© William Anderson 2025. This site is a work in progress - more features are coming! We are not affiliated with Octopus Energy in any way.</p>
     </div>
+  <template id="widgetTemplate">
+    <div data-type="applianceWidget" class="gridDynamicItem gridHeight" style="display: block;">
+      <span class="close">&times;</span>
+      <p data-field="name" class="quicksand-txt title"></p> <!-- Appliance name -->
+      <p class="quicksand-txt title"><span data-field="power"></span>W</p> <!-- Appliance power -->
+      <p class="quicksand-txt">Start at <b><span data-field="startAt"></span></b></p> <!-- Appliance start time -->
+      <p class="quicksand-txt">(A delay start of <span data-field="delayStart"></span>)</p> <!-- Appliance delay start -->
+      <p class="quicksand-txt">For <span data-field="hours"></span> hours and <span data-field="minutes"></span> minutes</p> <!-- Appliance run time -->
+      <p class="quicksand-txt">At a cost of <b><span data-field="cost"></span>p</b>&nbsp;<span class="material-symbols-outlined warning-span tooltip" style="display: none;" data-field="warning">warning<span class="tooltiptext quicksand-txt">Tomorrow's pricing hasn't<br>been released yet.<br>Check back at 16:00<br>for an updated start time!</span></span></p> <!-- Appliance cost -->
+    </div>
+  </template>
   </body>
 </html>

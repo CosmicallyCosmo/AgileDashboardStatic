@@ -4,6 +4,11 @@ import { Temporal } from '@js-temporal/polyfill';
 import * as d3 from "d3";
 declare const CookiesEuBanner: any;
 
+export interface TimeFormat {
+    hours: number,
+    minutes: number,
+}
+
 var entityMap = {
   '&': '&amp;',
   '<': '&lt;',
@@ -93,23 +98,6 @@ export function toLondonISOString(utcDate: Date) {
   return new Date(
     utcDate.toLocaleString("en-US", { timeZone: "Europe/London" })
   );
-};
-
-export function getLondonTimeParts(utcIsoString: string) {
-  const utcDate = new Date(utcIsoString);
-
-  const formatter = new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Europe/London",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false
-  });
-
-  // This returns something like "13:00"
-  const timeString = formatter.format(utcDate);
-
-  const [hour, minute] = timeString.split(":").map(Number);
-  return { hour, minute };
 };
 
 export function getLondonDayRangeAsDate(offset = 0) {
