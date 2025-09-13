@@ -11,7 +11,7 @@ export let userInfo: UserInfo = { accountNumber: undefined };
 async function get(url: string, params?: Params, auth = false, userInfo?: UserInfo) {
   let now = new Date();
   if (!params)
-    params = { method: "GET", headers: new Headers(), cache: "no-cache" };
+    params = { method: "GET", headers: new Headers(), cache: "no-store" };
   if (auth) {
     if (!userInfo)
       throw new Error("Tried to call get with auth without passing userInfo!");

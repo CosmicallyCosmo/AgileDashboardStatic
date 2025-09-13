@@ -104,9 +104,15 @@ async function selectGraph(selected: BarProfile = "unitBar") {
   let consumptionClassList = (document.getElementById("selectConsumption") as HTMLButtonElement)!.classList;
   selectedGraph = selected;
   if (selectedGraph === "unitBar") {
+    const disabled = (offset == 1 || (offset == 0 && !next_available));
+    right.disabled = disabled;
+    right_floating.disabled = disabled;
     unitButtonClassList.add("noHover", "unSelectedGraphType");
     consumptionClassList.remove("noHover", "unSelectedGraphType");
   } else {
+    const disabled = (offset >= 0);
+    right.disabled = disabled;
+    right_floating.disabled = disabled;
     unitButtonClassList.remove("noHover", "unSelectedGraphType");
     consumptionClassList.add("noHover", "unSelectedGraphType");
   }
@@ -161,9 +167,13 @@ async function getUserData(pf: Date, pt: Date) {
     let errorMessageContainer = document.getElementById("noDataWarningMessage") as HTMLParagraphElement;
     console.log(pf.toDateString(), now, pf.toDateString() > now.toDateString());
     if (!(pf.toDateString() === now.toDateString()) && pf.getTime() > now.getTime()) {
-      errorMessageContainer.innerText = "Unless you have a time machine, there ain't going to be data!";
+      errorMessageContainer.innerText = "No usage data for tomorrow yet, going back to today.";
       openModal("noDataWarning");
+      await new Promise(r => setTimeout(r, 2000));
+      closeModal();
       await buttonCb("left");
+      right.disabled = true;
+      right_floating.disabled = true;
       return false;
     }
   let res = await db.consumption.where("interval_start").between(pf.toISOString(), pt.toISOString(), true, false).toArray();
@@ -179,7 +189,7 @@ async function getUserData(pf: Date, pt: Date) {
       if (pf.toDateString() === now.toDateString()) {
           openModal("noDataWarning");
       } else {
-        errorMessageContainer.innerText = "Missing data for this day - Octopus WTF?!";
+        errorMessageContainer.innerText = "Missing data for this day - check with other methods.";
           openModal("noDataWarning");
       };
       return false;
@@ -226,7 +236,6 @@ async function buttonCb(id: string) {
   left_floating.disabled = true;
 
   await updateGraphs(false, id);
-
   right.disabled = disabled;
   right_floating.disabled = disabled;
   left.disabled = false;
