@@ -94,7 +94,7 @@ db.version(1).stores(storesDef);
 async function getNextAvailable() {
   let tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
-  tomorrow.setHours(0, 0, 0, 0);
+  tomorrow.setHours(12, 0, 0, 0);
   let last_date = new Date((await db[region].orderBy("valid_from").last())!.valid_from);
   return (last_date.getTime() > tomorrow.getTime());
 };
