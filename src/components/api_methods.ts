@@ -23,7 +23,7 @@ async function get(url: string, params?: Params, auth = false, userInfo?: UserIn
     };
     params.headers.set('Authorization', `${userInfo.token!.token}`);
   }
-  params.cache = "no-cache";
+  params.cache = "no-store";
   let response = await fetch(url, params);
   if (response.ok) {
     let json = await response.json();
