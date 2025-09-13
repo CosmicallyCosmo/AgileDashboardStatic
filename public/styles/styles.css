@@ -130,7 +130,7 @@ body {
   background-color: rgb(216, 216, 216);
 }
 
-.navSelect > select {
+select {
     flex-grow: 1;
     padding: 12px;
     background-color: rgb(234, 232, 232);

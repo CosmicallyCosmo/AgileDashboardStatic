@@ -109,14 +109,15 @@
     <div id="settingsModal" class="modal">
       <div class="modal-content modalSmall">
         <span class="close closeModal">&times;</span>
+        <p class="quicksand-txt" style="font-size: 18px;"><b style="color: red;">Experimental</b> - view your usage data!</p>
         <label for="accountNumber" class="quicksand-txt">Account number </label><br>
         <input type="text" id="accountNumber" name="accountNumber" class="quicksand-txt"><br>
         <label for="APIKey" class="quicksand-txt">API key </label><br>
         <input type="text" id="APIKey" name="APIKey" class="quicksand-txt"><br>
         <label for="rememberMe" class="quicksand-txt">Remember details? </label><br>
         <input type="checkbox" id="rememberMe" name="rememberMe"><br>
-        <p>Note: your details & data aren't shared with us - <b>all processing is done entirely in your browser.</b></p>
-        <p>Note: Selecting "remember me" will store your account number and JWT refresh token in your browser which is potentially inescure. <b>Your API key is never stored.</b></p>
+        <p class="quicksand-txt">Note: your details & data aren't shared with us - <b>all processing is done entirely in your browser.</b></p>
+        <p class="quicksand-txt">Note: Selecting <em>remember details</em> will store your account number and JWT refresh token in your browser which is potentially inescure. <b>Your API key is never stored.</b></p>
         <input type="button" id="addDetailsButton" class = "addApplianceButton quicksand-txt" value="Get usage data">
         <p style="color: red; display: none" id="settingsErr">Error: invalid details - please double check!</p>
         <p>
