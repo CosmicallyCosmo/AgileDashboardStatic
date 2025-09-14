@@ -122,3 +122,12 @@ export function getLondonDayRangeAsDate(offset = 0) {
 
   return { start, end };
 }
+
+export function calculateConsumptionCost(unitData: number[], consumptionData: number[]) {
+    // Pad out both arrays
+    unitData = Object.assign(new Array(48), unitData);
+    consumptionData = Object.assign(new Array(48), consumptionData);
+    console.log(unitData, consumptionData);
+    let temp: number[] = unitData.slice();
+    return temp.map((e, index) => e * consumptionData[index]);
+}

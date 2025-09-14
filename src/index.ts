@@ -7,10 +7,10 @@ declare const CookiesEuBanner: any;
 import { escapeHtml, validateInt, setCookie, getCookie, minMovingAverage, getLondonDayRangeAsDate } from "./components/utils.ts";
 import { getUnitData, getConsumptionData, initialiseUser } from "./components/api_methods.ts";
 import { updateBar, updateKPI } from "./components/graph.ts";
-import type { BarProfile, GaugeProfile } from "./components/graph.ts";
-
-import type { Appliance } from "./components/appliance_utils.ts";
 import { calculateApplianceCost, calculateApplianceDelayStart } from "./components/appliance_utils.ts";
+
+import type { BarProfile, GaugeProfile } from "./components/graph.ts";
+import type { Appliance } from "./components/appliance_utils.ts";
 
 let offset = 0;
 let next_available = false;
@@ -18,9 +18,7 @@ let region: Region = "A";
 let modal = null;
 let appliances: Appliance[] = [{ id: 'default', name: 'Washing machine', power: 2000, runTime: { hours: 2, minutes: 30 } }];
 const right = (document.getElementById("right") as HTMLInputElement);
-const right_floating = (document.getElementById("right-floating") as HTMLInputElement);
 const left = (document.getElementById("left") as HTMLInputElement);
-const left_floating = (document.getElementById("left-floating") as HTMLInputElement);
 let menuRotated = false;
 let isMobile = false;
 let selectedGraph: BarProfile = "unitBar";
@@ -106,41 +104,43 @@ async function selectGraph(selected: BarProfile = "unitBar") {
   if (selectedGraph === "unitBar") {
     const disabled = (offset == 1 || (offset == 0 && !next_available));
     right.disabled = disabled;
-    right_floating.disabled = disabled;
     unitButtonClassList.add("noHover", "unSelectedGraphType");
     consumptionClassList.remove("noHover", "unSelectedGraphType");
   } else {
     const disabled = (offset >= 0);
     right.disabled = disabled;
-    right_floating.disabled = disabled;
     unitButtonClassList.remove("noHover", "unSelectedGraphType");
     consumptionClassList.add("noHover", "unSelectedGraphType");
   }
   await updateGraphs(undefined, undefined);
 };
 
-function moveSelect(e: any) {
-  let select = document.getElementById("region") as HTMLSelectElement;
+function layoutCallback(e: any) {
+  let select = document.getElementById("regionSelector") as HTMLSelectElement;
   let graphSelector = document.getElementById("graphSelector") as HTMLDivElement;
-  graphSelector.remove();
-  graphSelector.style.visibility = "visible";
   let graphSelectorDesktopContainer = document.getElementById("graphContainer") as HTMLDivElement;
   let graphSelectorMobileContainer = document.getElementById("floatingControls") as HTMLDivElement;
+  let buttonsMobileContainer = document.getElementById("buttonControls") as HTMLDivElement;
+  let leftButtonDesktopContainer = document.getElementById("leftbcolumn") as HTMLDivElement;
+  let rightButtonDesktopContainer = document.getElementById("rightbcolumn") as HTMLDivElement;
   let selectDesktopContainer = document.getElementById("navSelect") as HTMLDivElement;
   let selectMobileContainer = document.getElementById("settingsModal")!.querySelector(".modal-content") as HTMLDivElement;
-  if (e.matches) {
-    // Mobile
+  if (e.matches) { // Mobile
     let br = document.createElement("br");
     selectMobileContainer.prepend(select, br, br);
     graphSelectorMobileContainer.append(graphSelector);
-    select.style.display = "inline-block";
+    buttonsMobileContainer.prepend(right);
+    buttonsMobileContainer.prepend(left);
     isMobile = true;
   } else {
     selectDesktopContainer.appendChild(select);
     graphSelectorDesktopContainer.prepend(graphSelector);
+    rightButtonDesktopContainer.prepend(right);
+    leftButtonDesktopContainer.prepend(left);
     selectDesktopContainer.style.visibility = "visible";
-    select.style.display = "inline-block";
   }
+  select.style.display = "inline-block";
+  graphSelector.style.visibility = "visible";
 };
 
 async function storeUserData() {
@@ -173,7 +173,6 @@ async function getUserData(pf: Date, pt: Date) {
       closeModal();
       await buttonCb("left");
       right.disabled = true;
-      right_floating.disabled = true;
       return false;
     }
   let res = await db.consumption.where("interval_start").between(pf.toISOString(), pt.toISOString(), true, false).toArray();
@@ -231,15 +230,11 @@ async function buttonCb(id: string) {
   const disabled = (offset == 1 || (offset == 0 && !next_available));
 
   right.disabled = true;
-  right_floating.disabled = true;
   left.disabled = true;
-  left_floating.disabled = true;
 
   await updateGraphs(false, id);
   right.disabled = disabled;
-  right_floating.disabled = disabled;
   left.disabled = false;
-  left_floating.disabled = false;
 };
 
 async function updateGraphs(initial = false, direction = "right") {
@@ -410,7 +405,7 @@ function openModal(id: string) {
 
   document.addEventListener("DOMContentLoaded", async function () {
     region = getCookie("region", "A");
-    (document.getElementById("region") as HTMLInputElement)!.value = region;
+    (document.getElementById("regionSelector") as HTMLInputElement)!.value = region;
     (document.getElementById("selectedRegion") as HTMLSpanElement).textContent = regionMap[region];
 
     new CookiesEuBanner(function () {
@@ -423,7 +418,6 @@ function openModal(id: string) {
     next_available = (await getNextAvailable());
 
     right.disabled = !next_available;
-    right_floating.disabled = !next_available;
 
     for (let appliance of appliances) {
       gather_futs.push(addAppliance(appliance));
@@ -442,11 +436,9 @@ function openModal(id: string) {
     }
 
     left.addEventListener("click", () => { buttonCb('left') });
-    left_floating.addEventListener("click", () => { buttonCb('left') });
     right.addEventListener("click", () => { buttonCb('right') });
-    right_floating.addEventListener("click", () => { buttonCb('right') });
 
-    document.getElementById("region")!.addEventListener("change", async (event) => {
+    document.getElementById("regionSelector")!.addEventListener("change", async (event) => {
       region = ((event.target as HTMLInputElement)!).value as Region;
       (document.getElementById("selectedRegion") as HTMLSpanElement).textContent = regionMap[region];
       setCookie("region", ((event.target as HTMLInputElement)!).value, 365);
@@ -465,9 +457,9 @@ function openModal(id: string) {
     });
 
     const mediaQuery = window.matchMedia("(max-width: 1100px)");
-    moveSelect(mediaQuery);
+    layoutCallback(mediaQuery);
 
-    mediaQuery.addEventListener("change", moveSelect);
+    mediaQuery.addEventListener("change", layoutCallback);
     (document.getElementById("newAppliance")!).addEventListener("click", () => { openModal("applianceModal") });
     (document.getElementById("addApplianceButton")!).addEventListener("click", () => { parseAppliance() });
     (document.getElementById("settingsButton")!).addEventListener("click", () => { openModal("settingsModal") });
