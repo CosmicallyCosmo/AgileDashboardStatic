@@ -37,7 +37,7 @@ function generateTimes() {
 
 export function newBar(x: Date[], y: number[], titlePrefix: string, colourRange: Range, dataRange: Range, suffix: string) {
   // TODO: pad out the values so the new day has 48 then normalize etc
-  y = Object.assign(new Array(48), y);
+  y.concat(Array(48 - y.length).fill(0))
 
   var standingCharge = {
     x: generateTimes(),
@@ -108,7 +108,7 @@ export function updateBar(x: Date[], y: number[], type: BarProfile, initial = fa
     newBar(x, y, titlePrefix, colourRange, dataRange, suffix);
     return;
   };
-  y = Object.assign(new Array(48), y);
+  y.concat(Array(48 - y.length).fill(0))
   // Prepare new data
   var newData = {
     y: y,

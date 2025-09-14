@@ -300,7 +300,6 @@ async function updateGraphs(initial = false, direction = "right") {
     var unitData = res.map(a => a.value_inc_vat);
     standingCharge = await getStandingChargeData(dt_range.start, dt_range.end);
     var data: any[] = calculateConsumptionCost(consumptionData, unitData);
-    console.log(data, unitData, consumptionData);
     var startValue: GaugeData = ["Total cost", data.reduce((partialSum, a) => partialSum + a, 0) + standingCharge as number, "totalCostGauge"];
     var middleValue: GaugeData = ["Min cost", Math.round(Math.min(...data) + Number.EPSILON) as number, "costGauge"];
     var endValue: GaugeData = ["Max cost", Math.round(Math.max(...data) + Number.EPSILON) as number, "costGauge"];  
