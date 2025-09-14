@@ -96,7 +96,7 @@ export async function getToken(APIKey?: string) {
 
 export async function getUnitData(region: string, period_from: Date, period_to: Date) {
   let url = `https://api.octopus.energy/v1/products/AGILE-24-10-01/electricity-tariffs/E-1R-AGILE-24-10-01-${region}/standard-unit-rates?`
-  url += new URLSearchParams({ page_size: "25000", period_from: period_from.toISOString(), period_to: period_to.toISOString() });
+  url += new URLSearchParams({ page_size: "25000", period_from: period_from.toISOString(), period_to: period_to.toISOString(), _: (new Date()).toISOString() });
   return await get(url);
 }
 
@@ -121,6 +121,6 @@ export async function getConsumptionData(period_from: Date, period_to: Date) {
     await getMeter();
   }
   let url = `https://api.octopus.energy/v1/electricity-meter-points/${userInfo.meter!.mpan}/meters/${userInfo.meter!.serialNumber}/consumption?`;
-  url += new URLSearchParams({ page_size: "25000", period_from: period_from.toISOString(), period_to: period_to.toISOString() });
+  url += new URLSearchParams({ page_size: "25000", period_from: period_from.toISOString(), period_to: period_to.toISOString(), _: (new Date()).toISOString() });
   return await get(url, undefined, true, userInfo);
 }
