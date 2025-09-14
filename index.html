@@ -28,8 +28,8 @@
         </ul>
       </div>
       <div id="navSelect" class="navSelect hc" style="visibility: hidden;">
-        <label for="region" style="display: none;">Choose a region:</label>
-        <select id="region" name="region" autocomplete="off" style="display:none;">
+        <label for="regionSelector" style="display: none;">Choose a region:</label>
+        <select id="regionSelector" name="regionSelector" autocomplete="off" style="display:none;">
           <option value="" selected hidden></option>
           <option value="A">Eastern England</option>
           <option value="B">East Midlands</option>
@@ -60,26 +60,22 @@
       </div>
     </div>
     <div style="display: flex;">
-      <div class="leftbcolumn navbutton hc"><button id="left" class="button">&lt;</button></div>
+      <div class="leftbcolumn navbutton hc" id="leftbcolumn"><button id="left" class="button">&lt;</button></div>
       <div class="gcolumn mc gh plot" id="graphContainer">
         <div class="graphSelector" id="graphSelector" style="visibility: hidden;">
           <button id="selectUnit" class="selectGraphButton left-select-button noHover quicksand-txt">Tariff</button>
-          <button id="selectConsumption" class="selectGraphButton right-select-button noHover quicksand-txt">Consumption</button>
+          <button id="selectConsumption" class="selectGraphButton noHover quicksand-txt">Consumption</button>
+          <button id="selectCost" class="selectGraphButton right-select-button noHover quicksand-txt">Cost</button>
         </div>
         <div id="noDataWarning" class="modal">
           <div class="modal-content modalSmall">
-            <p class="quicksand-txt" id="noDataWarningMessage">No data for today... we're trying really hard to get it!</p>
+            <p class="quicksand-txt" id="noDataWarningMessage">No data for today - try again later.</p>
           </div>
         </div>
       </div>
-      <div class="rightbcolumn navbutton hc"><button id="right" class="button" disabled>&gt;</button></div>
+      <div class="rightbcolumn navbutton hc" id="rightbcolumn"><button id="right" class="button" disabled>&gt;</button></div>
     </div>
-    <div id="floatingControls" class="floatingControls">
-      <div>
-      <button id="left-floating" class="button">&lt;</button>
-      <button id="right-floating" class="button" disabled>&gt;</button>
-      </div>
-    </div>
+    <div id="floatingControls" class="floatingControls"><div id="buttonControls"></div></div>
     <div class="blockGrid" id="dynamicBlockGrid">
       <div class="appliance static">
         <p class="quicksand-txt new hm hc"><b>New!</b><p>

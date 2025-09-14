@@ -165,7 +165,6 @@ async function storeUserData() {
 async function getUserData(pf: Date, pt: Date) {
   let now = (new Date());
     let errorMessageContainer = document.getElementById("noDataWarningMessage") as HTMLParagraphElement;
-    console.log(pf.toDateString(), now, pf.toDateString() > now.toDateString());
     if (!(pf.toDateString() === now.toDateString()) && pf.getTime() > now.getTime()) {
       errorMessageContainer.innerText = "No usage data for tomorrow yet, going back to today.";
       openModal("noDataWarning");
@@ -186,7 +185,12 @@ async function getUserData(pf: Date, pt: Date) {
     });
     if (res.length === 0) {
       if (pf.toDateString() === now.toDateString()) {
+          errorMessageContainer.innerText = "No data for today - try again later.";
           openModal("noDataWarning");
+          await new Promise(r => setTimeout(r, 2000));
+          closeModal();
+          await buttonCb("left");
+          right.disabled = true;
       } else {
         errorMessageContainer.innerText = "Missing data for this day - check with other methods.";
           openModal("noDataWarning");
