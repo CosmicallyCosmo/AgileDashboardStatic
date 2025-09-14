@@ -127,7 +127,21 @@ export function calculateConsumptionCost(unitData: number[], consumptionData: nu
     // Pad out both arrays
     unitData = Object.assign(new Array(48), unitData);
     consumptionData = Object.assign(new Array(48), consumptionData);
-    console.log(unitData, consumptionData);
+    consumptionData = consumptionData.map(item => roundHalfEven(item));
     let temp: number[] = unitData.slice();
     return temp.map((e, index) => e * consumptionData[index]);
+}
+
+export function roundHalfEven(num: number) {
+  const floor = Math.floor(num);
+  const diff = num - floor;
+
+  if (diff < 0.5) {
+    return floor;
+  } else if (diff > 0.5) {
+    return floor + 1;
+  } else {
+    // Exactly .5, choose the even number
+    return (floor % 2 === 0) ? floor : floor + 1;
+  }
 }
