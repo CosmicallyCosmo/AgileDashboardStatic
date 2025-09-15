@@ -12,6 +12,8 @@ import { calculateApplianceCost, calculateApplianceDelayStart } from "./componen
 import type { BarProfile, GaugeProfile } from "./components/graph.ts";
 import type { Appliance } from "./components/appliance_utils.ts";
 
+import "./styles/styles.css";
+
 let offset = 0;
 let next_available = false;
 let region: Region = "A";
@@ -206,10 +208,9 @@ async function getUserData(pf: Date, pt: Date) {
           await new Promise(r => setTimeout(r, 2000));
           closeModal();
           await buttonCb("left");
-          right.disabled = true;
       } else {
         errorMessageContainer.innerText = "Missing data for this day - check with other methods.";
-          openModal("noDataWarning");
+        openModal("noDataWarning");
       };
       return false;
       // No data, spawn no data div and disable buttons?
