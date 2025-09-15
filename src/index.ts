@@ -177,16 +177,16 @@ async function storeUserData() {
 async function getUserData(pf: Date, pt: Date) {
   // I can cache this better, it's fine if old data is stale, just need new current data.
   let now = (new Date());
-    let errorMessageContainer = document.getElementById("noDataWarningMessage") as HTMLParagraphElement;
-    if (!(pf.toDateString() === now.toDateString()) && pf.getTime() > now.getTime()) {
-      errorMessageContainer.innerText = "No usage data for tomorrow yet, going back to today.";
-      openModal("noDataWarning");
-      await new Promise(r => setTimeout(r, 2000));
-      closeModal();
-      await buttonCb("left");
-      right.disabled = true;
-      return false;
-    }
+  let errorMessageContainer = document.getElementById("noDataWarningMessage") as HTMLParagraphElement;
+  if (!(pf.toDateString() === now.toDateString()) && pf.getTime() > now.getTime()) {
+    errorMessageContainer.innerText = "No usage data for tomorrow yet, going back to today.";
+    openModal("noDataWarning");
+    await new Promise(r => setTimeout(r, 2000));
+    closeModal();
+    await buttonCb("left");
+    right.disabled = true;
+    return false;
+  }
   let res = await db.consumption.where("interval_start").between(pf, pt, true, false).toArray();
   if (res.length < 48) {
     let new_pf = new Date(pf.valueOf());
@@ -203,11 +203,12 @@ async function getUserData(pf: Date, pt: Date) {
     });
     if (res.length === 0) {
       if (pf.toDateString() === now.toDateString()) {
-          errorMessageContainer.innerText = "No data for today - try again later.";
-          openModal("noDataWarning");
-          await new Promise(r => setTimeout(r, 2000));
-          closeModal();
-          await buttonCb("left");
+        errorMessageContainer.innerText = "No data for today - try again later.";
+        openModal("noDataWarning");
+        await new Promise(r => setTimeout(r, 2000));
+        closeModal();
+        await buttonCb("left");
+        right.disabled = true;
       } else {
         errorMessageContainer.innerText = "Missing data for this day - check with other methods.";
         openModal("noDataWarning");
@@ -301,9 +302,9 @@ async function updateGraphs(initial = false, direction = "right") {
     var unitData = res.map(a => a.value_inc_vat);
     standingCharge = await getStandingChargeData(dt_range.start, dt_range.end);
     var data: any[] = calculateConsumptionCost(consumptionData, unitData);
-    var startValue: GaugeData = ["Total cost", data.reduce((partialSum, a) => partialSum + a, 0) + standingCharge as number, "totalCostGauge"];
-    var middleValue: GaugeData = ["Min cost", Math.round(Math.min(...data) + Number.EPSILON) as number, "costGauge"];
-    var endValue: GaugeData = ["Max cost", Math.round(Math.max(...data) + Number.EPSILON) as number, "costGauge"];  
+    var startValue: GaugeData = ["Total day cost", data.reduce((partialSum, a) => partialSum + a, 0) + standingCharge as number, "totalCostGauge"];
+    var middleValue: GaugeData = ["Min hourly cost", Math.round(Math.min(...data) + Number.EPSILON) as number, "costGauge"];
+    var endValue: GaugeData = ["Max hourly cost", Math.round(Math.max(...data) + Number.EPSILON) as number, "costGauge"];
   };
   updateBar(startTimes, data, selectedGraph, initial, Math.round(standingCharge * 100 + Number.EPSILON) / 4800);
   updateKPI("start-kpi", ...startValue, initial);
