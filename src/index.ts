@@ -224,9 +224,9 @@ async function getData(pf: Date, pt: Date, initial = false, direction = "right")
   const t = new Date();
   let max = 30;
   if (initial)
-    max = 1;
+    max = 3;
   let res = await db[region].where("valid_from").between(pf, pt, true, false).toArray();
-  if (res.length !== 48 && !((pf.toDateString() == t.toDateString()) && res.length >= 40) && !((pf.getTime() > t.getTime()) && t.getHours() >= 16)) {
+  if (initial || (res.length !== 48 && !((pf.toDateString() == t.toDateString()) && res.length >= 40) && !((pf.getTime() > t.getTime()) && t.getHours() >= 16))) {
     let npf = new Date(pf.valueOf());
     let npt = new Date(pt.valueOf());
     if (direction === "left") {
