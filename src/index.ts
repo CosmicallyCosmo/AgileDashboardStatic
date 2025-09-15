@@ -12,6 +12,8 @@ import type { BarProfile, GaugeProfile } from "./components/graph.ts";
 import type { Appliance } from "./components/appliance_utils.ts";
 import { calculateApplianceCost, calculateApplianceDelayStart } from "./components/appliance_utils.ts";
 
+import "./styles/styles.css";
+
 let offset = 0;
 let next_available = false;
 let region: Region = "A";
@@ -164,18 +166,18 @@ async function storeUserData() {
 
 async function getUserData(pf: Date, pt: Date) {
   let now = (new Date());
-    let errorMessageContainer = document.getElementById("noDataWarningMessage") as HTMLParagraphElement;
-    console.log(pf.toDateString(), now, pf.toDateString() > now.toDateString());
-    if (!(pf.toDateString() === now.toDateString()) && pf.getTime() > now.getTime()) {
-      errorMessageContainer.innerText = "No usage data for tomorrow yet, going back to today.";
-      openModal("noDataWarning");
-      await new Promise(r => setTimeout(r, 2000));
-      closeModal();
-      await buttonCb("left");
-      right.disabled = true;
-      right_floating.disabled = true;
-      return false;
-    }
+  let errorMessageContainer = document.getElementById("noDataWarningMessage") as HTMLParagraphElement;
+  console.log(pf.toDateString(), now, pf.toDateString() > now.toDateString());
+  if (!(pf.toDateString() === now.toDateString()) && pf.getTime() > now.getTime()) {
+    errorMessageContainer.innerText = "No usage data for tomorrow yet, going back to today.";
+    openModal("noDataWarning");
+    await new Promise(r => setTimeout(r, 2000));
+    closeModal();
+    await buttonCb("left");
+    right.disabled = true;
+    right_floating.disabled = true;
+    return false;
+  }
   let res = await db.consumption.where("interval_start").between(pf.toISOString(), pt.toISOString(), true, false).toArray();
   if (res.length < 48) {
     let new_pf = new Date(pf.valueOf());
@@ -187,10 +189,10 @@ async function getUserData(pf: Date, pt: Date) {
     });
     if (res.length === 0) {
       if (pf.toDateString() === now.toDateString()) {
-          openModal("noDataWarning");
+        openModal("noDataWarning");
       } else {
         errorMessageContainer.innerText = "Missing data for this day - check with other methods.";
-          openModal("noDataWarning");
+        openModal("noDataWarning");
       };
       return false;
       // No data, spawn no data div and disable buttons?
