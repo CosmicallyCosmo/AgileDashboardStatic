@@ -4,13 +4,13 @@ import { Dexie } from 'dexie';
 import type { Table } from 'dexie';
 declare const CookiesEuBanner: any;
 
-import { escapeHtml, validateInt, setCookie, getCookie, minMovingAverage, getLondonDayRangeAsDate } from "./components/utils.ts";
-import { getUnitData, getConsumptionData, initialiseUser } from "./components/api_methods.ts";
+import { escapeHtml, validateInt, setCookie, getCookie, minMovingAverage, getLondonDayRangeAsDate, calculateConsumptionCost } from "./components/utils.ts";
+import { getUnitData, getConsumptionData, initialiseUser, getStandingCharge } from "./components/api_methods.ts";
 import { updateBar, updateKPI } from "./components/graph.ts";
-import type { BarProfile, GaugeProfile } from "./components/graph.ts";
-
-import type { Appliance } from "./components/appliance_utils.ts";
 import { calculateApplianceCost, calculateApplianceDelayStart } from "./components/appliance_utils.ts";
+
+import type { BarProfile, GaugeProfile } from "./components/graph.ts";
+import type { Appliance } from "./components/appliance_utils.ts";
 
 import "./styles/styles.css";
 
@@ -20,9 +20,7 @@ let region: Region = "A";
 let modal = null;
 let appliances: Appliance[] = [{ id: 'default', name: 'Washing machine', power: 2000, runTime: { hours: 2, minutes: 30 } }];
 const right = (document.getElementById("right") as HTMLInputElement);
-const right_floating = (document.getElementById("right-floating") as HTMLInputElement);
 const left = (document.getElementById("left") as HTMLInputElement);
-const left_floating = (document.getElementById("left-floating") as HTMLInputElement);
 let menuRotated = false;
 let isMobile = false;
 let selectedGraph: BarProfile = "unitBar";
@@ -104,45 +102,56 @@ async function getNextAvailable() {
 async function selectGraph(selected: BarProfile = "unitBar") {
   let unitButtonClassList = (document.getElementById("selectUnit") as HTMLButtonElement)!.classList;
   let consumptionClassList = (document.getElementById("selectConsumption") as HTMLButtonElement)!.classList;
+  let costClassList = (document.getElementById("selectCost") as HTMLButtonElement)!.classList;
   selectedGraph = selected;
   if (selectedGraph === "unitBar") {
     const disabled = (offset == 1 || (offset == 0 && !next_available));
     right.disabled = disabled;
-    right_floating.disabled = disabled;
     unitButtonClassList.add("noHover", "unSelectedGraphType");
     consumptionClassList.remove("noHover", "unSelectedGraphType");
-  } else {
+    costClassList.remove("noHover", "unSelectedGraphType");
+  } else if (selectedGraph === "consumptionBar") {
     const disabled = (offset >= 0);
     right.disabled = disabled;
-    right_floating.disabled = disabled;
     unitButtonClassList.remove("noHover", "unSelectedGraphType");
     consumptionClassList.add("noHover", "unSelectedGraphType");
+    costClassList.remove("noHover", "unSelectedGraphType");
+  } else {
+    unitButtonClassList.remove("noHover", "unSelectedGraphType");
+    consumptionClassList.remove("noHover", "unSelectedGraphType");
+    costClassList.add("noHover", "unSelectedGraphType");
+    const disabled = (offset >= 0);
+    right.disabled = disabled;
   }
   await updateGraphs(undefined, undefined);
 };
 
-function moveSelect(e: any) {
-  let select = document.getElementById("region") as HTMLSelectElement;
+function layoutCallback(e: any) {
+  let select = document.getElementById("regionSelector") as HTMLSelectElement;
   let graphSelector = document.getElementById("graphSelector") as HTMLDivElement;
-  graphSelector.remove();
-  graphSelector.style.visibility = "visible";
   let graphSelectorDesktopContainer = document.getElementById("graphContainer") as HTMLDivElement;
   let graphSelectorMobileContainer = document.getElementById("floatingControls") as HTMLDivElement;
+  let buttonsMobileContainer = document.getElementById("buttonControls") as HTMLDivElement;
+  let leftButtonDesktopContainer = document.getElementById("leftbcolumn") as HTMLDivElement;
+  let rightButtonDesktopContainer = document.getElementById("rightbcolumn") as HTMLDivElement;
   let selectDesktopContainer = document.getElementById("navSelect") as HTMLDivElement;
   let selectMobileContainer = document.getElementById("settingsModal")!.querySelector(".modal-content") as HTMLDivElement;
-  if (e.matches) {
-    // Mobile
+  if (e.matches) { // Mobile
     let br = document.createElement("br");
     selectMobileContainer.prepend(select, br, br);
     graphSelectorMobileContainer.append(graphSelector);
-    select.style.display = "inline-block";
+    buttonsMobileContainer.prepend(right);
+    buttonsMobileContainer.prepend(left);
     isMobile = true;
   } else {
     selectDesktopContainer.appendChild(select);
     graphSelectorDesktopContainer.prepend(graphSelector);
+    rightButtonDesktopContainer.prepend(right);
+    leftButtonDesktopContainer.prepend(left);
     selectDesktopContainer.style.visibility = "visible";
-    select.style.display = "inline-block";
   }
+  select.style.display = "inline-block";
+  graphSelector.style.visibility = "visible";
 };
 
 async function storeUserData() {
@@ -161,13 +170,14 @@ async function storeUserData() {
   }
   document.getElementById("settingsErr")!.style.display = "none";
   (document.getElementById("selectConsumption") as HTMLButtonElement).classList.remove("noHover");
+  (document.getElementById("selectCost") as HTMLButtonElement).classList.remove("noHover");
   closeModal();
 };
 
 async function getUserData(pf: Date, pt: Date) {
+  // I can cache this better, it's fine if old data is stale, just need new current data.
   let now = (new Date());
   let errorMessageContainer = document.getElementById("noDataWarningMessage") as HTMLParagraphElement;
-  console.log(pf.toDateString(), now, pf.toDateString() > now.toDateString());
   if (!(pf.toDateString() === now.toDateString()) && pf.getTime() > now.getTime()) {
     errorMessageContainer.innerText = "No usage data for tomorrow yet, going back to today.";
     openModal("noDataWarning");
@@ -175,21 +185,30 @@ async function getUserData(pf: Date, pt: Date) {
     closeModal();
     await buttonCb("left");
     right.disabled = true;
-    right_floating.disabled = true;
     return false;
   }
-  let res = await db.consumption.where("interval_start").between(pf.toISOString(), pt.toISOString(), true, false).toArray();
+  let res = await db.consumption.where("interval_start").between(pf, pt, true, false).toArray();
   if (res.length < 48) {
     let new_pf = new Date(pf.valueOf());
     if (pf.toDateString() !== now.toDateString())
       new_pf.setDate(pt.getDate() - 30);
     res = (await getConsumptionData(new_pf, pt)).results;
-    res = await db.consumption.bulkPut(res).then(() => {
-      return db.consumption.where("interval_start").between(pf.toISOString(), pt.toISOString(), true, false).toArray();
+    const convertedData = res.map(item => ({
+      ...item,
+      interval_start: new Date(item.interval_start),
+      interval_end: new Date(item.interval_end)
+    }));
+    res = await db.consumption.bulkPut(convertedData).then(() => {
+      return db.consumption.where("interval_start").between(pf, pt, true, false).toArray();
     });
     if (res.length === 0) {
       if (pf.toDateString() === now.toDateString()) {
+        errorMessageContainer.innerText = "No data for today - try again later.";
         openModal("noDataWarning");
+        await new Promise(r => setTimeout(r, 2000));
+        closeModal();
+        await buttonCb("left");
+        right.disabled = true;
       } else {
         errorMessageContainer.innerText = "Missing data for this day - check with other methods.";
         openModal("noDataWarning");
@@ -206,7 +225,7 @@ async function getData(pf: Date, pt: Date, initial = false, direction = "right")
   let max = 30;
   if (initial)
     max = 1;
-  let res = await db[region].where("valid_from").between(pf.toISOString(), pt.toISOString(), true, false).toArray();
+  let res = await db[region].where("valid_from").between(pf, pt, true, false).toArray();
   if (res.length !== 48 && !((pf.toDateString() == t.toDateString()) && res.length >= 40) && !((pf.getTime() > t.getTime()) && t.getHours() >= 16)) {
     let npf = new Date(pf.valueOf());
     let npt = new Date(pt.valueOf());
@@ -216,12 +235,26 @@ async function getData(pf: Date, pt: Date, initial = false, direction = "right")
       npt.setDate(npt.getDate() + max);
     };
     res = (await getUnitData(region, npf, npt)).results;
-    res = await db[region].bulkPut(res).then(() => {
-      return db[region].where("valid_from").between(pf.toISOString(), pt.toISOString(), true, false).toArray();
+    const convertedData = res.map(item => ({
+      ...item,
+      valid_from: new Date(item.valid_from),
+      valid_to: new Date(item.valid_to)
+    }));
+    res = await db[region].bulkPut(convertedData).then(() => {
+      return db[region].where("valid_from").between(pf, pt, true, false).toArray();
     });
   };
   return res;
 };
+
+async function getStandingChargeData(pf: Date, pt: Date) {
+  // This is stupid, no caching and will break on overlaps
+  let res = await getStandingCharge(region, pf, pt);
+  if (res === false) {
+    // panic
+  }
+  return res.results[0].value_inc_vat;
+}
 
 async function buttonCb(id: string) {
   if (id == 'right') {
@@ -233,19 +266,15 @@ async function buttonCb(id: string) {
   const disabled = (offset == 1 || (offset == 0 && !next_available));
 
   right.disabled = true;
-  right_floating.disabled = true;
   left.disabled = true;
-  left_floating.disabled = true;
 
   await updateGraphs(false, id);
   right.disabled = disabled;
-  right_floating.disabled = disabled;
   left.disabled = false;
-  left_floating.disabled = false;
 };
 
 async function updateGraphs(initial = false, direction = "right") {
-
+  let standingCharge = 0;
   let dt_range = getLondonDayRangeAsDate(offset);
   if (selectedGraph === "unitBar") {
     var res: any[] = await getData(dt_range.start, dt_range.end, initial, direction);
@@ -254,7 +283,7 @@ async function updateGraphs(initial = false, direction = "right") {
     var startValue: GaugeData = ["Min price", Math.round(Math.min(...data) * 100 + Number.EPSILON) / 100 as number, "unitGauge"];
     var middleValue: GaugeData = ["Avg price", (Math.round((data.reduce((partialSum, a) => partialSum + a, 0) / data.length) * 100 + Number.EPSILON) / 100) as number, "unitGauge"];
     var endValue: GaugeData = ["Max price", Math.round(Math.max(...data) * 100 + Number.EPSILON) / 100 as number, "unitGauge"];
-  } else {
+  } else if (selectedGraph === "consumptionBar") {
     let res: false | any[] = await getUserData(dt_range.start, dt_range.end);
     if (res === false)
       return;
@@ -263,8 +292,21 @@ async function updateGraphs(initial = false, direction = "right") {
     var startValue: GaugeData = ["Total consumption", data.reduce((partialSum, a) => partialSum + a, 0) as number, "consumptionGauge"];
     var middleValue: GaugeData = ["Avg consumption", Math.round((data.reduce((partialSum, a) => partialSum + a, 0) / data.length) * 1000 + Number.EPSILON) as number, "powerGauge"];
     var endValue: GaugeData = ["Max consumption", Math.round(Math.max(...data) * 1000 * 2 + Number.EPSILON) as number, "powerGauge"];
+  } else {
+    let res: false | any[] = await getUserData(dt_range.start, dt_range.end);
+    if (res === false)
+      return;
+    var consumptionData = res.map(a => a.consumption);
+    var startTimes = res.map(a => new Date(a.interval_start));
+    res = await getData(dt_range.start, dt_range.end, initial, direction);
+    var unitData = res.map(a => a.value_inc_vat);
+    standingCharge = await getStandingChargeData(dt_range.start, dt_range.end);
+    var data: any[] = calculateConsumptionCost(consumptionData, unitData);
+    var startValue: GaugeData = ["Total day cost", data.reduce((partialSum, a) => partialSum + a, 0) + standingCharge as number, "totalCostGauge"];
+    var middleValue: GaugeData = ["Min hourly cost", Math.round(Math.min(...data) + Number.EPSILON) as number, "costGauge"];
+    var endValue: GaugeData = ["Max hourly cost", Math.round(Math.max(...data) + Number.EPSILON) as number, "costGauge"];
   };
-  updateBar(startTimes, data, selectedGraph, initial);
+  updateBar(startTimes, data, selectedGraph, initial, Math.round(standingCharge * 100 + Number.EPSILON) / 4800);
   updateKPI("start-kpi", ...startValue, initial);
   updateKPI("middle-kpi", ...middleValue, initial);
   updateKPI("end-kpi", ...endValue, initial);
@@ -412,7 +454,7 @@ function openModal(id: string) {
 
   document.addEventListener("DOMContentLoaded", async function () {
     region = getCookie("region", "A");
-    (document.getElementById("region") as HTMLInputElement)!.value = region;
+    (document.getElementById("regionSelector") as HTMLInputElement)!.value = region;
     (document.getElementById("selectedRegion") as HTMLSpanElement).textContent = regionMap[region];
 
     new CookiesEuBanner(function () {
@@ -425,7 +467,6 @@ function openModal(id: string) {
     next_available = (await getNextAvailable());
 
     right.disabled = !next_available;
-    right_floating.disabled = !next_available;
 
     for (let appliance of appliances) {
       gather_futs.push(addAppliance(appliance));
@@ -439,16 +480,15 @@ function openModal(id: string) {
 
     if (await initialiseUser()) {
       (document.getElementById("selectConsumption") as HTMLButtonElement).classList.remove("noHover");
+      (document.getElementById("selectCost") as HTMLButtonElement).classList.remove("noHover");
     } else {
       localStorage.removeItem("userInfo");
     }
 
     left.addEventListener("click", () => { buttonCb('left') });
-    left_floating.addEventListener("click", () => { buttonCb('left') });
     right.addEventListener("click", () => { buttonCb('right') });
-    right_floating.addEventListener("click", () => { buttonCb('right') });
 
-    document.getElementById("region")!.addEventListener("change", async (event) => {
+    document.getElementById("regionSelector")!.addEventListener("change", async (event) => {
       region = ((event.target as HTMLInputElement)!).value as Region;
       (document.getElementById("selectedRegion") as HTMLSpanElement).textContent = regionMap[region];
       setCookie("region", ((event.target as HTMLInputElement)!).value, 365);
@@ -467,15 +507,16 @@ function openModal(id: string) {
     });
 
     const mediaQuery = window.matchMedia("(max-width: 1100px)");
-    moveSelect(mediaQuery);
+    layoutCallback(mediaQuery);
 
-    mediaQuery.addEventListener("change", moveSelect);
+    mediaQuery.addEventListener("change", layoutCallback);
     (document.getElementById("newAppliance")!).addEventListener("click", () => { openModal("applianceModal") });
     (document.getElementById("addApplianceButton")!).addEventListener("click", () => { parseAppliance() });
     (document.getElementById("settingsButton")!).addEventListener("click", () => { openModal("settingsModal") });
     (document.getElementById("addDetailsButton")!).addEventListener("click", () => { storeUserData() });
     (document.getElementById("selectUnit")!).addEventListener("click", () => { selectGraph("unitBar") });
     (document.getElementById("selectConsumption")!).addEventListener("click", () => { selectGraph("consumptionBar") });
+    (document.getElementById("selectCost")!).addEventListener("click", () => { selectGraph("costBar") });
 
     let settingsMenu = document.getElementById("settingsMenu")!;
     settingsMenu.addEventListener("click", () => { openModal("settingsModal") });

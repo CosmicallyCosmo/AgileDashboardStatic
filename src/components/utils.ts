@@ -122,3 +122,26 @@ export function getLondonDayRangeAsDate(offset = 0) {
 
   return { start, end };
 }
+
+export function calculateConsumptionCost(unitData: number[], consumptionData: number[]) {
+    // Pad out both arrays
+    unitData.concat(Array(48 - unitData.length).fill(0))
+    consumptionData.concat(Array(48 - consumptionData.length).fill(0))
+    consumptionData = consumptionData.map(item => roundHalfEven(item));
+    let temp: number[] = unitData.slice();
+    return temp.map((e, index) => e * consumptionData[index]);
+}
+
+export function roundHalfEven(num: number) {
+  const floor = Math.floor(num);
+  const diff = num - floor;
+
+  if (diff < 0.5) {
+    return floor;
+  } else if (diff > 0.5) {
+    return floor + 1;
+  } else {
+    // Exactly .5, choose the even number
+    return (floor % 2 === 0) ? floor : floor + 1;
+  }
+}
