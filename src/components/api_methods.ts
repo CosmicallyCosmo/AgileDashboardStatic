@@ -33,7 +33,8 @@ async function get(url: string, params?: Params, auth = false, userInfo?: UserIn
   };
 }
 
-export async function initialiseUser(accountNumber?: string, APIKey?: string, rememberMe = false) {
+export async function initialiseUser(accountNumber?: string, APIKey?: string, mpan?: string, serialNumber?: string, rememberMe = false) {
+  console.log(mpan, serialNumber);
   let errContainer = document.getElementById("settingsErr") as HTMLParagraphElement;
   if (!accountNumber || !APIKey) {
     let res: UserInfo = JSON.parse(localStorage.getItem("userInfo")!);
@@ -47,7 +48,7 @@ export async function initialiseUser(accountNumber?: string, APIKey?: string, re
         errContainer.innerText = "Unable to authenticate with provided details via the Octopus API - please double check!";
       return isValid;
     };
-    isValid = await getMeter();
+    isValid = await getMeter(mpan, serialNumber);
     if (!isValid) {
         errContainer.innerText = "Unable to get meter details via the Octopus API - do you have a smart meter?";
     };
@@ -59,7 +60,7 @@ export async function initialiseUser(accountNumber?: string, APIKey?: string, re
     errContainer.innerText = "Unable to authenticate with provided details via the Octopus API - please double check!";
     return isValid;
   };
-  isValid = await getMeter();
+  isValid = await getMeter(mpan, serialNumber);
   if (!isValid) {
     errContainer.innerText = "Unable to get meter details via the Octopus API - do you have a smart meter?";
     return isValid;
@@ -101,6 +102,7 @@ export async function getToken(APIKey?: string) {
   try {
     var res = ((await request<ObtainKrakenTokenResponse>('https://api.octopus.energy/v1/graphql/', query, variables)).obtainKrakenToken);
   } catch (error) {
+    console.log(error);
     return false;
   }
   let tokenExpiresIn = new Date();
@@ -116,20 +118,24 @@ export async function getUnitData(region: string, period_from: Date, period_to: 
   return await get(url);
 }
 
-export async function getMeter() {
-  const url = `https://api.octopus.energy/v1/accounts/${escapeHtml(userInfo.accountNumber!)}`;
-  try {
-    let res = await get(url, undefined, true, userInfo) as MeterPoint;
-    let property = res.properties.at(0);
-    let electricity_meter_point = property?.electricity_meter_points.at(0);
-    let mpan = electricity_meter_point!.mpan;
-    let meter = electricity_meter_point?.meters.at(0);
-    let serialNumber = meter!.serial_number;
-    userInfo.meter = { mpan: mpan, serialNumber: serialNumber };
-    return true;
-  } catch (error) {
-    return false;
+export async function getMeter(mpan?: string, serialNumber?: string) {
+  console.log(mpan, serialNumber);
+  if (!mpan || !serialNumber) {
+    console.log("trying octo for the details");
+    const url = `https://api.octopus.energy/v1/accounts/${escapeHtml(userInfo.accountNumber!)}`;
+    try {
+      let res = await get(url, undefined, true, userInfo) as MeterPoint;
+      let property = res.properties.at(0);
+      let electricity_meter_point = property?.electricity_meter_points.at(0);
+      mpan = electricity_meter_point!.mpan;
+      let meter = electricity_meter_point?.meters.at(0);
+      serialNumber = meter!.serial_number;
+    } catch (error) {
+      return false;
+    };
   };
+  userInfo.meter = { mpan: mpan, serialNumber: serialNumber };
+  return true;
 };
 
 export async function getStandingCharge(region: string, period_from: Date, period_to: Date) {
@@ -140,7 +146,7 @@ export async function getStandingCharge(region: string, period_from: Date, perio
 
 export async function getConsumptionData(period_from: Date, period_to: Date) {
   if (!userInfo.meter) {
-    await getMeter();
+    await getMeter(undefined, undefined);
   }
   let url = `https://api.octopus.energy/v1/electricity-meter-points/${userInfo.meter!.mpan}/meters/${userInfo.meter!.serialNumber}/consumption?`;
   url += new URLSearchParams({ page_size: "25000", period_from: period_from.toISOString(), period_to: period_to.toISOString(), _: (new Date()).toISOString() });
