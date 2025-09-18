@@ -159,7 +159,7 @@ async function storeUserData() {
   const accountNumber = escapeHtml(((document.getElementById("accountNumber") as HTMLInputElement)!).value);
   const rememberMe = ((document.getElementById("rememberMe") as HTMLInputElement)!).checked;
   let err = false;
-  if (!apiKey.startsWith("sk_live") || accountNumber.length === 0)
+  if (apiKey.length === 0 || accountNumber.length === 0)
     err = true;
   let res = await initialiseUser(accountNumber, apiKey, rememberMe);
   if (!res)

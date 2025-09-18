@@ -34,6 +34,7 @@ async function get(url: string, params?: Params, auth = false, userInfo?: UserIn
 }
 
 export async function initialiseUser(accountNumber?: string, APIKey?: string, rememberMe = false) {
+  let errContainer = document.getElementById("settingsErr") as HTMLParagraphElement;
   if (!accountNumber || !APIKey) {
     let res: UserInfo = JSON.parse(localStorage.getItem("userInfo")!);
     if (!res)
@@ -42,12 +43,27 @@ export async function initialiseUser(accountNumber?: string, APIKey?: string, re
     res.token!.expiry = new Date(res.token!.expiry);
     userInfo = res;
     let isValid = await getToken();
+    if (!isValid) {
+        errContainer.innerText = "Unable to authenticate with provided details via the Octopus API - please double check!";
+      return isValid;
+    };
     isValid = await getMeter();
+    if (!isValid) {
+        errContainer.innerText = "Unable to get meter details via the Octopus API - do you have a smart meter?";
+    };
     return isValid;
   };
   userInfo.accountNumber = accountNumber;
   let isValid = await getToken(APIKey);
+  if (!isValid) {
+    errContainer.innerText = "Unable to authenticate with provided details via the Octopus API - please double check!";
+    return isValid;
+  };
   isValid = await getMeter();
+  if (!isValid) {
+    errContainer.innerText = "Unable to get meter details via the Octopus API - do you have a smart meter?";
+    return isValid;
+  };
   if (isValid) {
     if (rememberMe) {
       new CookiesEuBanner(function () {
