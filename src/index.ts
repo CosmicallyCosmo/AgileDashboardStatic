@@ -157,15 +157,18 @@ function layoutCallback(e: any) {
 async function storeUserData() {
   const apiKey = escapeHtml(((document.getElementById("APIKey") as HTMLInputElement)!).value);
   const accountNumber = escapeHtml(((document.getElementById("accountNumber") as HTMLInputElement)!).value);
+  const mpan = escapeHtml(((document.getElementById("mpan") as HTMLInputElement)!).value) || undefined;
+  const serialNumber = escapeHtml(((document.getElementById("serialNumber") as HTMLInputElement)!).value) || undefined;
   const rememberMe = ((document.getElementById("rememberMe") as HTMLInputElement)!).checked;
   let err = false;
   if (apiKey.length === 0 || accountNumber.length === 0)
     err = true;
-  let res = await initialiseUser(accountNumber, apiKey, rememberMe);
+  let res = await initialiseUser(accountNumber, apiKey, mpan, serialNumber, rememberMe);
   if (!res)
     err = true;
   if (err) {
     document.getElementById("settingsErr")!.style.display = "block";
+    document.getElementById("manualDetailsEntry")!.style.display = "block";
     return;
   }
   document.getElementById("settingsErr")!.style.display = "none";
