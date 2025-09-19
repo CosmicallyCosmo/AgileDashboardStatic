@@ -124,7 +124,7 @@ export async function getMeter(mpan?: string, serialNumber?: string) {
       let property = res.properties.at(0);
       let electricity_meter_point = property?.electricity_meter_points.at(0);
       mpan = electricity_meter_point!.mpan;
-      let meter = electricity_meter_point?.meters.at(0);
+      let meter = electricity_meter_point?.meters.at(-1);
       serialNumber = meter!.serial_number;
     } catch (error) {
       return false;

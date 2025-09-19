@@ -168,13 +168,13 @@ async function storeUserData() {
     err = true;
   if (err) {
     document.getElementById("settingsErr")!.style.display = "block";
-    document.getElementById("manualDetailsEntry")!.style.display = "block";
     return;
   }
   document.getElementById("settingsErr")!.style.display = "none";
   (document.getElementById("selectConsumption") as HTMLButtonElement).classList.remove("noHover");
   (document.getElementById("selectCost") as HTMLButtonElement).classList.remove("noHover");
   closeModal();
+  document.getElementById("manualDetailsEntry")!.style.display = "block";
 };
 
 async function getUserData(pf: Date, pt: Date) {
