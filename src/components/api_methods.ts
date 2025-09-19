@@ -34,7 +34,6 @@ async function get(url: string, params?: Params, auth = false, userInfo?: UserIn
 }
 
 export async function initialiseUser(accountNumber?: string, APIKey?: string, mpan?: string, serialNumber?: string, rememberMe = false) {
-  console.log(mpan, serialNumber);
   let errContainer = document.getElementById("settingsErr") as HTMLParagraphElement;
   if (!accountNumber || !APIKey) {
     let res: UserInfo = JSON.parse(localStorage.getItem("userInfo")!);
@@ -45,12 +44,12 @@ export async function initialiseUser(accountNumber?: string, APIKey?: string, mp
     userInfo = res;
     let isValid = await getToken();
     if (!isValid) {
-        errContainer.innerText = "Unable to authenticate with provided details via the Octopus API - please double check!";
+      errContainer.innerText = "Unable to authenticate with provided details via the Octopus API - please double check!";
       return isValid;
     };
     isValid = await getMeter(mpan, serialNumber);
     if (!isValid) {
-        errContainer.innerText = "Unable to get meter details via the Octopus API - do you have a smart meter?";
+      errContainer.innerText = "Unable to get meter details via the Octopus API - do you have a smart meter?";
     };
     return isValid;
   };
@@ -102,7 +101,6 @@ export async function getToken(APIKey?: string) {
   try {
     var res = ((await request<ObtainKrakenTokenResponse>('https://api.octopus.energy/v1/graphql/', query, variables)).obtainKrakenToken);
   } catch (error) {
-    console.log(error);
     return false;
   }
   let tokenExpiresIn = new Date();
@@ -119,9 +117,7 @@ export async function getUnitData(region: string, period_from: Date, period_to: 
 }
 
 export async function getMeter(mpan?: string, serialNumber?: string) {
-  console.log(mpan, serialNumber);
   if (!mpan || !serialNumber) {
-    console.log("trying octo for the details");
     const url = `https://api.octopus.energy/v1/accounts/${escapeHtml(userInfo.accountNumber!)}`;
     try {
       let res = await get(url, undefined, true, userInfo) as MeterPoint;
