@@ -25,6 +25,8 @@ const BarProfileSettings: Record<BarProfile, BarProfileSetting> = {
   costBar: { titlePrefix: "Cost for ", colourRange: [-10, 40], dataRange: [-10, 40], suffix: "p"},
 };
 
+let curBarProfile: BarProfile = "unitBar";
+
 function generateTimes() {
   let times = [];
   let start = new Date(1970, 0, 1, 0, 0, 0, 0);
@@ -120,21 +122,31 @@ export function updateBar(x: Date[], y: number[], type: BarProfile, initial = fa
     y: standingArr,
   };
 
+  let animationTime = 150;
+  if (curBarProfile != type) {
+    animationTime = 0;
+    curBarProfile = type;
+  }
+
   // Animate the update
   Plotly.animate('graphContainer', {
     data: [standingTrace, newData],      // new trace data
     traces: [0, 1],
-  }, {
+    layout: {
+      yaxis: {
+          range: dataRange
+        }
+      }
+    }, {
     transition: {
-      duration: 500,   // duration of animation in ms
+      duration: animationTime,   // duration of animation in ms
       easing: 'cubic-in-out'
     },
-    frame: { duration: 500, redraw: true }
-  });
+    frame: { duration: animationTime, redraw: true },
+      });
 
   // Update layout if needed (e.g., title or y-axis)
   Plotly.relayout('graphContainer', {
-    'yaxis.range': dataRange,
     'yaxis.ticksuffix': suffix,
     'title.text': titlePrefix + x.at(-1)!.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
   });
@@ -206,10 +218,10 @@ export function updateKPI(
     }]
   }, {
     transition: {
-      duration: 500, // speed of animation in ms
+      duration: 150, // speed of animation in ms
       easing: 'cubic-in-out'
     },
-    frame: { duration: 500, redraw: true }
+    frame: { duration: 150, redraw: true }
   });
 
   Plotly.relayout(id, { 'title.text': title });
