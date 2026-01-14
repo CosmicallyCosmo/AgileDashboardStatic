@@ -1,56 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="View current and future Agile Octopus tariff rates for your region.">
     <title>Agile Dashboard</title>
-    <link rel="canonical" href="http://www.agiledashboard.co.uk/">
-    <script defer src="/packages/cookies-eu-banner.min.js"></script>
     <script defer src="/packages/plotly-custom.min.js"></script>
     <script defer type="module" src="/src/index.ts?"></script>
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" as="style">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=menu,settings,warning"/>
+    <%- head %>
   </head>
   <body>
-    <div id="cookies-eu-banner" style="display: none;">
-      By continuing to use this site, you accept the use of a cookie to store your region and local storage for storing your user data.
-      <button id="cookies-eu-reject">Reject</button>
-      <button id="cookies-eu-accept">Accept</button>
-    </div>
-    <div class="navGrid" id="mytopnav">
-      <div class="navigation">
-        <h1 class="quicksand-txt">Agile Dashboard</h1>
-        <ul class="hc">
-          <li><a href="https://www.cosmicallycosmo.com/linkedin" class="quicksand-txt">About me</a></li>
-          <li><a href="https://ko-fi.com/agiledashboard" class="quicksand-txt">Blog</a></li> 
-        </ul>
-      </div>
-      <div id="navSelect" class="navSelect hc" style="visibility: hidden;">
-        <label for="regionSelector" style="display: none;">Choose a region:</label>
-        <select id="regionSelector" name="regionSelector" autocomplete="off" style="display:none;">
-          <option value="" selected hidden></option>
-          <option value="A">Eastern England</option>
-          <option value="B">East Midlands</option>
-          <option value="C">London</option>
-          <option value="D">Merseyside & Northern Wales</option>
-          <option value="E">West Midlands</option>
-          <option value="F">North Eastern England</option>
-          <option value="G">North Western England</option>
-          <option value="H">Southern England</option>
-          <option value="J">South Eastern England</option>
-          <option value="K">Southern Wales</option>
-          <option value="L">South Western England</option>
-          <option value="M">Yorkshire</option>
-          <option value="N">Southern Scotland</option>
-          <option value="P">Northern Scotland</option>
-        </select>
-      </div>
-      <div class="navSettings" style="margin-right: 0;">
-        <span class="material-symbols-outlined settings-span hc" id="settingsButton">settings</span>
-        <span class="material-symbols-outlined menu-span sc" id="settingsMenu" style="display: none;">menu</span>
-      </div>
-    </div>
+    <%- header %>
     <div>
       <div class="titlecol">
         <div><h2 class="quicksand-txt">Daily Agile Octopus prices</h2></div>
@@ -101,30 +59,6 @@
         <p style="color: red; display: none" id="applianceErr">Error: invalid form parameters - please double check!</p>
       </div>
     </div>
-    <div id="settingsModal" class="modal">
-      <div class="modal-content modalSmall">
-        <span class="close closeModal">&times;</span>
-        <p class="quicksand-txt" style="font-size: 18px;"><b style="color: red;">Experimental</b> - view your usage data!</p>
-        <label for="accountNumber" class="quicksand-txt">Account number </label><br>
-        <input type="text" id="accountNumber" name="accountNumber" class="quicksand-txt"><br>
-        <label for="APIKey" class="quicksand-txt">API key </label><br>
-        <input type="text" id="APIKey" name="APIKey" class="quicksand-txt"><br>
-        <label for="rememberMe" class="quicksand-txt">Remember details? </label><br>
-        <input type="checkbox" id="rememberMe" name="rememberMe"><br>
-        <div id="manualDetailsEntry"  style="display: none">
-          <p class="quicksand-txt">If the above doesn't work, you can try entering your MPAN & serial number manually below alongside your API key and account number.</p>
-          <p class="quicksand-txt">Note: no validation is done on the MPAN / serial number, if no data appears double check their values.</p>
-          <label for="mpan" class="quicksand-txt">Meter MPAN </label><br>
-          <input type="text" id="mpan" name="mpan" class="quicksand-txt"><br>
-          <label for="serialNumber" class="quicksand-txt">Meter serial number </label><br>
-          <input type="text" id="serialNumber" name="serialNumber" class="quicksand-txt"><br>
-        </div>
-        <p class="quicksand-txt">Note: your details & data aren't shared with us - <b>all processing is done entirely in your browser.</b></p>
-        <p class="quicksand-txt">Note: Selecting <em>remember details</em> will store your account number and JWT refresh token in your browser which is potentially insecure. <b>Your API key is never stored.</b></p>
-        <input type="button" id="addDetailsButton" class = "addApplianceButton quicksand-txt" value="Get usage data">
-        <p style="color: red; display: none" id="settingsErr">Error: invalid details - please double check!</p>
-      </div>
-    </div>     
     <div class='faq'>
       <input id='faq-a' type='checkbox'>
       <label for='faq-a'>
@@ -157,19 +91,17 @@
           <p class="faq-text">Thanks! We accept donations to cover the cost of hosting, please take a look here to see how to <a href="https://ko-fi.com/agiledashboard"> donate</a>.</p>
       </label>
     </div>
-    <div class="footer quicksand-txt">
-      <p>Always verify the content produced by this website, we are not liable financially or otherwise for misleading or incorrect data.<br><br>© William Anderson 2025. This site is a work in progress - more features are coming! We are not affiliated with Octopus Energy in any way.</p>
-    </div>
-  <template id="widgetTemplate">
-    <div data-type="applianceWidget" class="gridDynamicItem gridHeight" style="display: block;">
-      <span class="close">&times;</span>
-      <p data-field="name" class="quicksand-txt title"></p> <!-- Appliance name -->
-      <p class="quicksand-txt title"><span data-field="power"></span>W</p> <!-- Appliance power -->
-      <p class="quicksand-txt">Start at <b><span data-field="startAt"></span></b></p> <!-- Appliance start time -->
-      <p class="quicksand-txt">(A delay start of <span data-field="delayStart"></span>)</p> <!-- Appliance delay start -->
-      <p class="quicksand-txt">For <span data-field="hours"></span> hours and <span data-field="minutes"></span> minutes</p> <!-- Appliance run time -->
-      <p class="quicksand-txt">At a cost of <b><span data-field="cost"></span>p</b>&nbsp;<span class="material-symbols-outlined warning-span tooltip" style="display: none;" data-field="warning">warning<span class="tooltiptext quicksand-txt">Tomorrow's pricing hasn't<br>been released yet.<br>Check back at 16:00<br>for an updated start time!</span></span></p> <!-- Appliance cost -->
-    </div>
-  </template>
+    <template id="widgetTemplate">
+      <div data-type="applianceWidget" class="gridDynamicItem gridHeight" style="display: block;">
+        <span class="close">&times;</span>
+        <p data-field="name" class="quicksand-txt title"></p> <!-- Appliance name -->
+        <p class="quicksand-txt title"><span data-field="power"></span>W</p> <!-- Appliance power -->
+        <p class="quicksand-txt">Start at <b><span data-field="startAt"></span></b></p> <!-- Appliance start time -->
+        <p class="quicksand-txt">(A delay start of <span data-field="delayStart"></span>)</p> <!-- Appliance delay start -->
+        <p class="quicksand-txt">For <span data-field="hours"></span> hours and <span data-field="minutes"></span> minutes</p> <!-- Appliance run time -->
+        <p class="quicksand-txt">At a cost of <b><span data-field="cost"></span>p</b>&nbsp;<span class="material-symbols-outlined warning-span tooltip" style="display: none;" data-field="warning">warning<span class="tooltiptext quicksand-txt">Tomorrow's pricing hasn't<br>been released yet.<br>Check back at 16:00<br>for an updated start time!</span></span></p> <!-- Appliance cost -->
+      </div>
+    </template>
+    <%- footer %>
   </body>
 </html>
