@@ -252,9 +252,17 @@ async function getData(pf: Date, pt: Date, initial = false, direction = "right")
 
 async function getStandingChargeData(pf: Date, pt: Date) {
   // This is stupid, will break on overlaps
+  let shouldUpdate = true;
   let standingCharge = JSON.parse(localStorage.getItem("standingCharge")!);
-  let valid_from = new Date(standingCharge.valid_from)
-  if (!standingCharge || standingCharge.region != region || valid_from.getTime() > pf.getTime()) {
+
+  if (standingCharge) {
+    let valid_from = new Date(standingCharge.valid_from);
+    if (standingCharge.region == region && valid_from.getTime() < pf.getTime()) {
+      shouldUpdate = false;
+    };
+  };
+
+  if (shouldUpdate) {
     let res = await getStandingCharge(region, pf, pt);
     if (res === false) {
       // panic
