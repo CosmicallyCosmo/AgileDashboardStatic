@@ -251,12 +251,20 @@ async function getData(pf: Date, pt: Date, initial = false, direction = "right")
 };
 
 async function getStandingChargeData(pf: Date, pt: Date) {
-  // This is stupid, no caching and will break on overlaps
-  let res = await getStandingCharge(region, pf, pt);
-  if (res === false) {
-    // panic
-  }
-  return res.results[0].value_inc_vat;
+  // This is stupid, will break on overlaps
+  let standingCharge = JSON.parse(localStorage.getItem("standingCharge")!);
+  let valid_from = new Date(standingCharge.valid_from)
+  if (!standingCharge || standingCharge.region != region || valid_from.getTime() > pf.getTime()) {
+    let res = await getStandingCharge(region, pf, pt);
+    if (res === false) {
+      // panic
+    };
+    standingCharge = { region: region, cost: res.results[0].value_inc_vat, valid_from: new Date(res.results[0].valid_from) };
+    new CookiesEuBanner(function () {
+      localStorage.setItem("standingCharge", JSON.stringify(standingCharge));
+    });
+  };
+  return standingCharge.cost;
 }
 
 async function buttonCb(id: string) {
