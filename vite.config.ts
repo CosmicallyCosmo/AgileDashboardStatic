@@ -1,8 +1,10 @@
-// vite.config.js / vite.config.ts
+import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
-export default {
+export default defineConfig({
   plugins: [
-    VitePWA()
+    VitePWA({
+      registerType: 'autoUpdate'
+    })
   ]
-}
+})
