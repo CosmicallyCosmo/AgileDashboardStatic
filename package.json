@@ -12,7 +12,8 @@
     "@types/d3": "^7.4.3",
     "typescript": "~5.8.3",
     "vite": "^7.1.2",
-    "vite-plugin-html": "^3.2.2"
+    "vite-plugin-html": "^3.2.2",
+    "vite-plugin-pwa": "^1.2.0"
   },
   "dependencies": {
     "@js-temporal/polyfill": "^0.5.1",

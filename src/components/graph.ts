@@ -8,24 +8,32 @@ type Range = [number, number];
 type GaugeId = "start-kpi" | "middle-kpi" | "end-kpi";
 export type GaugeProfile = "powerGauge" | "consumptionGauge" | "unitGauge" | "costGauge" | "totalCostGauge";
 export type BarProfile = "unitBar" | "consumptionBar" | "costBar";
+export type BarMode = "tariffBar" | "compareBar"
 type BarProfileSetting = { titlePrefix: string, colourRange: Range, dataRange: Range, suffix: string };
-type GaugeProfileSetting = { colourRange: Range, dataRange: Range, suffix: string };
+type BarProfileTraces = { unitBar: boolean, standingBar: boolean, tariffTrace: boolean };
+type GaugeProfileSetting = { colourRange: Range, dataRange: Range, suffix: string, prefix: string };
 
 const GaugeProfileSettings: Record<GaugeProfile, GaugeProfileSetting> = {
-  unitGauge: { colourRange: [-20, 50], dataRange: [-5, 40], suffix: "p" },
-  powerGauge: { colourRange: [-500, 3500], dataRange: [0, 3000], suffix: "W" },
-  consumptionGauge: { colourRange: [-10, 40], dataRange: [0, 50], suffix: "kWh" },
-  costGauge: { colourRange: [-20, 40], dataRange: [-20, 60], suffix: "p" },
-  totalCostGauge: { colourRange: [-20, 700], dataRange: [-20, 600], suffix: "p" }
+  unitGauge: { colourRange: [-20, 50], dataRange: [-5, 40], suffix: "p", prefix: "" },
+  powerGauge: { colourRange: [-500, 3500], dataRange: [0, 3000], suffix: "W", prefix: "" },
+  consumptionGauge: { colourRange: [-10, 40], dataRange: [0, 50], suffix: "kWh", prefix: "" },
+  costGauge: { colourRange: [-20, 40], dataRange: [-20, 60], suffix: "p", prefix: "" },
+  totalCostGauge: { colourRange: [-20, 700], dataRange: [-20, 600], suffix: "", prefix: "£" }
 };
 
 const BarProfileSettings: Record<BarProfile, BarProfileSetting> = {
   unitBar: { titlePrefix: "Tariff data for ", colourRange: [-20, 50], dataRange: [-5, 40], suffix: "p" },
   consumptionBar: { titlePrefix: "Consumption for ", colourRange: [-2, 2], dataRange: [0, 2], suffix: "kWh" },
-  costBar: { titlePrefix: "Cost for ", colourRange: [-10, 40], dataRange: [-10, 40], suffix: "p"},
+  costBar: { titlePrefix: "Cost for ", colourRange: [-10, 40], dataRange: [-10, 40], suffix: "p" },
+};
+
+const BarProfileTraces: Record<BarMode, BarProfileTraces> = {
+  tariffBar: { unitBar: true, standingBar: true, tariffTrace: false },
+  compareBar: { unitBar: true, standingBar: true, tariffTrace: true },
 };
 
 let curBarProfile: BarProfile = "unitBar";
+let curBarMode: BarMode = "tariffBar";
 
 function generateTimes() {
   let times = [];
@@ -37,23 +45,54 @@ function generateTimes() {
   return times;
 }
 
-export function newBar(x: Date[], y: number[], titlePrefix: string, colourRange: Range, dataRange: Range, suffix: string) {
-  // TODO: pad out the values so the new day has 48 then normalize etc
+export function newBar(
+  x: Date[],
+  y: number[],
+  titlePrefix: string,
+  colourRange: Range,
+  dataRange: Range,
+  suffix: string,
+  barMode: BarMode = "tariffBar"
+) {
   y.concat(Array(Math.max(48 - y.length, 0)).fill(0));
+
+  curBarMode = barMode;
+  let traces: any = [];
+
+  if (curBarMode == "compareBar") {
+    let stepLine = {
+      type: 'scatter',
+      mode: 'lines',
+      name: 'Threshold',
+      visible: false,
+      x: generateTimes(),
+      y: new Array(48).fill(0),
+      line: {
+        shape: 'hv',
+        dash: 'dash',
+        width: 2,
+        color: 'purple'
+      }
+    };
+    traces.push(stepLine);
+  };
 
   var standingCharge = {
     x: generateTimes(),
-    y: new Array(48).fill(0),
+    y: (new Array(48).fill(0)),
     type: 'bar',
     marker: {
-    color: 'purple',          // base fill color
-    pattern: {
-      fgcolor: 'purple',      // color of the hatch lines
-    }},
+      color: 'purple',          // base fill color
+      pattern: {
+        fgcolor: 'purple',      // color of the hatch lines
+      }
+    },
     hovertemplate: 'Standing charge %{y}<extra></extra>'
   }
 
-  var data = {
+  traces.push(standingCharge);
+
+  var tariffData = {
     x: generateTimes(),
     y: y,
     type: 'bar',
@@ -65,6 +104,8 @@ export function newBar(x: Date[], y: number[], titlePrefix: string, colourRange:
     },
     hovertemplate: '%{x|%H:%M} - %{y}<extra></extra>'
   };
+
+  traces.push(tariffData);
 
   let layout = {
     dragmode: false,  // Disable zoom/pan
@@ -101,26 +142,46 @@ export function newBar(x: Date[], y: number[], titlePrefix: string, colourRange:
     showTips: false,
   };
 
-  Plotly.newPlot('graphContainer', [standingCharge, data], layout, config);
+  Plotly.newPlot('graphContainer', traces, layout, config);
 };
 
-export function updateBar(x: Date[], y: number[], type: BarProfile, initial = false, standingCharge = 0) {
-  const {titlePrefix, colourRange, dataRange, suffix }: BarProfileSetting = BarProfileSettings[type];
+export function updateBar(
+  x: Date[],
+  y: number[],
+  type: BarProfile,
+  initial = false,
+  standingCharge = 0,
+  altTariffData: number[] = [],
+  barMode: BarMode = "tariffBar") {
+
+  const { titlePrefix, colourRange, dataRange, suffix }: BarProfileSetting = BarProfileSettings[type];
   if (initial) {
-    newBar(x, y, titlePrefix, colourRange, dataRange, suffix);
+    newBar(x, y, titlePrefix, colourRange, dataRange, suffix, barMode);
     return;
   };
   y.concat(Array(Math.max(48 - y.length, 0)).fill(0))
-  // Prepare new data
-  var newData = {
+
+  let traces: any = [];
+
+  if (curBarMode == "compareBar") {
+    var altTariffArr = {
+      y: altTariffData.concat(Array(Math.max(48 - altTariffData.length, 0)).fill(0)),
+    };
+    traces.push(altTariffArr);
+  };
+
+  var standingChargeArr = {
+    y: new Array(48).fill(standingCharge),
+  };
+
+  traces.push(standingChargeArr);
+
+  var tariffData = {
     y: y,
     marker: { color: y, cmin: colourRange[0], cmax: colourRange[1] } // update colors
   };
 
-  let standingArr = Array(48).fill(standingCharge);
-  var standingTrace = {
-    y: standingArr,
-  };
+  traces.push(tariffData);
 
   let animationTime = 150;
   if (curBarProfile != type) {
@@ -130,26 +191,31 @@ export function updateBar(x: Date[], y: number[], type: BarProfile, initial = fa
 
   // Animate the update
   Plotly.animate('graphContainer', {
-    data: [standingTrace, newData],      // new trace data
-    traces: [0, 1],
+    data: traces,      // new trace data
     layout: {
       yaxis: {
-          range: dataRange
-        }
+        range: dataRange
       }
-    }, {
+    }
+  }, {
     transition: {
       duration: animationTime,   // duration of animation in ms
       easing: 'cubic-in-out'
     },
     frame: { duration: animationTime, redraw: true },
-      });
+  });
 
   // Update layout if needed (e.g., title or y-axis)
   Plotly.relayout('graphContainer', {
     'yaxis.ticksuffix': suffix,
     'title.text': titlePrefix + x.at(-1)!.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
   });
+
+  if (curBarMode == "compareBar") {
+    Plotly.restyle('graphContainer', {
+      visible: (curBarProfile == "unitBar")
+    }, [0]); // other tariff  }
+  };
 };
 
 export function newKPI(
@@ -168,7 +234,7 @@ export function newKPI(
     value: value,
     type: "indicator",
     mode: "gauge+number",
-    number: { suffix: suffix },
+    number: { suffix: suffix, valueformat: ".2f" },
     gauge: { axis: { range: dataRange }, bar: { color: colour } }
   }];
 
@@ -191,7 +257,8 @@ export function newKPI(
 
   // @ts-ignore
   Plotly.newPlot(id, data, layout, config);
-}
+};
+
 
 export function updateKPI(
   id: GaugeId,
@@ -201,7 +268,7 @@ export function updateKPI(
   initial = false,
 ): void {
 
-  const { colourRange, dataRange, suffix }: GaugeProfileSetting = GaugeProfileSettings[type];
+  const { colourRange, dataRange, suffix, prefix }: GaugeProfileSetting = GaugeProfileSettings[type];
 
   if (initial) {
     newKPI(id, title, value, colourRange, dataRange, suffix);
@@ -214,7 +281,7 @@ export function updateKPI(
     data: [{
       value: value,
       gauge: { axis: { range: dataRange }, bar: { color: colour } },
-      number: { suffix: suffix },
+      number: { suffix: suffix, prefix: prefix },
     }]
   }, {
     transition: {

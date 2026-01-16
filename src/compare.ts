@@ -5,7 +5,7 @@ declare const CookiesEuBanner: any;
 import { state } from "./components/state.ts";
 import { setCookie, getCookie, getLondonDayRangeAsDate, calculateConsumptionCost, rotateMenuIcon } from "./components/utils.ts";
 import { getConsumptionData, initialiseUser } from "./components/api_methods.ts";
-import { getNextAvailable, getData, getStandingChargeData } from "./components/data_methods.ts";
+import { getNextAvailable, getData, getGo, getStandingChargeData } from "./components/data_methods.ts";
 import { updateBar, updateKPI } from "./components/graph.ts";
 import { addAppliance, updateAppliance, parseAppliance } from "./components/appliance_methods.ts";
 import { db } from "./components/db.ts";
@@ -146,6 +146,8 @@ async function buttonCb(id: string) {
 async function updateGraphs(initial = false, direction = "right") {
   let standingCharge = 0;
   let dt_range = getLondonDayRangeAsDate(offset);
+  let resGo: any[] = await getGo(dt_range.start, dt_range.end);
+  let goData = resGo.map(a => a.value_inc_vat);
   if (selectedGraph === "unitBar") {
     var res: any[] = await getData(dt_range.start, dt_range.end, initial, direction);
     var data = res.map(a => a.value_inc_vat);
@@ -173,12 +175,11 @@ async function updateGraphs(initial = false, direction = "right") {
     standingCharge = await getStandingChargeData(dt_range.start, dt_range.end);
     var data: any[] = calculateConsumptionCost(consumptionData, unitData);
     var totalCost = data.reduce((partialSum, a) => partialSum + a, 0) + standingCharge as number;
-    console.log(totalCost, typeof (totalCost), totalCost / 100);
     var startValue: GaugeData = ["Total day cost", totalCost / 100, "totalCostGauge"];
     var middleValue: GaugeData = ["Min hourly cost", Math.round(Math.min(...data) + Number.EPSILON) as number, "costGauge"];
     var endValue: GaugeData = ["Max hourly cost", Math.round(Math.max(...data) + Number.EPSILON) as number, "costGauge"];
   };
-  updateBar(startTimes, data, selectedGraph, initial, Math.round(standingCharge * 100 + Number.EPSILON) / 4800);
+  updateBar(startTimes, data, selectedGraph, initial, Math.round(standingCharge * 100 + Number.EPSILON) / 4800, goData, "compareBar");
   updateKPI("start-kpi", ...startValue, initial);
   updateKPI("middle-kpi", ...middleValue, initial);
   updateKPI("end-kpi", ...endValue, initial);
@@ -246,7 +247,7 @@ async function updateGraphs(initial = false, direction = "right") {
     layoutCallback(mediaQuery);
 
     mediaQuery.addEventListener("change", layoutCallback);
-    (document.getElementById("homepage-link")!).classList.add("disabled");
+    (document.getElementById("compare-link")!).classList.add("disabled");
     (document.getElementById("newAppliance")!).addEventListener("click", () => { openModal("applianceModal") });
     (document.getElementById("addApplianceButton")!).addEventListener("click", () => { parseAppliance() });
     (document.getElementById("settingsButton")!).addEventListener("click", () => { openModal("settingsModal") });
@@ -265,7 +266,7 @@ async function updateGraphs(initial = false, direction = "right") {
 
     // When the user clicks anywhere outside of the modal, close it
     window.onclick = function (event) {
-      if (event.target == document.getElementById(state.openModal!)) {
+      if (state.openModal! && event.target == document.getElementById(state.openModal!)) {
         closeModal();
       }
     }

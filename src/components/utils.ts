@@ -4,6 +4,8 @@ import { Temporal } from '@js-temporal/polyfill';
 import * as d3 from "d3";
 declare const CookiesEuBanner: any;
 
+let menuRotated = false;
+
 export interface TimeFormat {
   hours: number,
   minutes: number,
@@ -124,12 +126,12 @@ export function getLondonDayRangeAsDate(offset = 0) {
 }
 
 export function calculateConsumptionCost(unitData: number[], consumptionData: number[]) {
-    // Pad out both arrays
-    unitData.concat(Array(48 - unitData.length).fill(0))
-    consumptionData.concat(Array(48 - consumptionData.length).fill(0))
-    consumptionData = consumptionData.map(item => roundHalfEven(item));
-    let temp: number[] = unitData.slice();
-    return temp.map((e, index) => e * consumptionData[index]);
+  // Pad out both arrays
+  unitData.concat(Array(48 - unitData.length).fill(0))
+  consumptionData.concat(Array(48 - consumptionData.length).fill(0))
+  consumptionData = consumptionData.map(item => roundHalfEven(item));
+  let temp: number[] = unitData.slice();
+  return temp.map((e, index) => e * consumptionData[index]);
 }
 
 export function roundHalfEven(num: number) {
@@ -145,3 +147,37 @@ export function roundHalfEven(num: number) {
     return (floor % 2 === 0) ? floor : floor + 1;
   }
 }
+
+export function rotateMenuIcon(override: boolean | null = null) {
+  menuRotated = override || menuRotated; // toggle state
+  document.getElementById("settingsMenu")!.style.transform = menuRotated ? "rotate(-90deg)" : "rotate(0deg)";
+}
+
+export function generateTimes(start: Date, end: Date, prices: any) {
+  const intervals = [];
+  prices = prices.reverse();
+  for (let price of prices) {
+
+    let valid_from = new Date(price.valid_from);
+    let valid_to = new Date(price.valid_to);
+
+    let intervalStart = valid_from < start ? start : valid_from;
+    let intervalEnd = valid_to > end ? end : valid_to;
+
+    const current = new Date(intervalStart);
+    while (current < intervalEnd) {
+      const next = new Date(current);
+      next.setMinutes(next.getMinutes() + 30);
+
+      intervals.push({
+        valid_from: new Date(current),
+        valid_to: new Date(next),
+        value_exc_vat: price.value_exc_vat,
+        value_inc_vat: price.value_inc_vat,
+      });
+      current.setTime(next.getTime());
+    };
+  };
+  return intervals;
+};
+

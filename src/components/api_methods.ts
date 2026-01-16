@@ -5,6 +5,8 @@ declare const CookiesEuBanner: any;
 import { escapeHtml } from "./utils.ts";
 import { request, gql } from 'graphql-request';
 import type { Params, UserInfo, ObtainKrakenTokenResponse, MeterPoint } from './api_types.ts';
+// TODO: Needs to be a separation of universal methods from those that tie into the page structure, this doesn't belong here
+import { closeModal } from "./modal_logic.ts";
 
 export let userInfo: UserInfo = { accountNumber: undefined };
 
@@ -76,6 +78,29 @@ export async function initialiseUser(accountNumber?: string, APIKey?: string, mp
   return isValid;
 }
 
+export async function storeUserData() {
+  const apiKey = escapeHtml(((document.getElementById("APIKey") as HTMLInputElement)!).value);
+  const accountNumber = escapeHtml(((document.getElementById("accountNumber") as HTMLInputElement)!).value);
+  const mpan = escapeHtml(((document.getElementById("mpan") as HTMLInputElement)!).value) || undefined;
+  const serialNumber = escapeHtml(((document.getElementById("serialNumber") as HTMLInputElement)!).value) || undefined;
+  const rememberMe = ((document.getElementById("rememberMe") as HTMLInputElement)!).checked;
+  let err = false;
+  if (apiKey.length === 0 || accountNumber.length === 0)
+    err = true;
+  let res = await initialiseUser(accountNumber, apiKey, mpan, serialNumber, rememberMe);
+  if (!res)
+    err = true;
+  if (err) {
+    document.getElementById("settingsErr")!.style.display = "block";
+    return;
+  }
+  document.getElementById("settingsErr")!.style.display = "none";
+  (document.getElementById("selectConsumption") as HTMLButtonElement).classList.remove("noHover");
+  (document.getElementById("selectCost") as HTMLButtonElement).classList.remove("noHover");
+  closeModal();
+  document.getElementById("manualDetailsEntry")!.style.display = "block";
+};
+
 export async function getToken(APIKey?: string) {
   let now = new Date();
   let authMethod;
@@ -112,6 +137,12 @@ export async function getToken(APIKey?: string) {
 
 export async function getUnitData(region: string, period_from: Date, period_to: Date) {
   let url = `https://api.octopus.energy/v1/products/AGILE-24-10-01/electricity-tariffs/E-1R-AGILE-24-10-01-${region}/standard-unit-rates?`
+  url += new URLSearchParams({ page_size: "25000", period_from: period_from.toISOString(), period_to: period_to.toISOString(), _: (new Date()).toISOString() });
+  return await get(url);
+}
+
+export async function getGoData(period_from: Date, period_to: Date) {
+  let url = `https://api.octopus.energy/v1/products/GO-VAR-22-10-14/electricity-tariffs/E-1R-GO-VAR-22-10-14-A/standard-unit-rates?`
   url += new URLSearchParams({ page_size: "25000", period_from: period_from.toISOString(), period_to: period_to.toISOString(), _: (new Date()).toISOString() });
   return await get(url);
 }

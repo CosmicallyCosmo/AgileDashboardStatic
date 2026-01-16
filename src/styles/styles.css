@@ -108,6 +108,15 @@ body {
   font-size: 30px;
 }
 
+.navigation > h1 > a {
+  color: black;
+  text-decoration: none; /* no underline */
+}
+
+a.disabled {
+  pointer-events: none;
+}
+
 .navigation > ul {
   display: flex;
   gap: 17px;
