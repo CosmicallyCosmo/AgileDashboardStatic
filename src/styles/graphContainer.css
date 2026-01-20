@@ -1,0 +1,68 @@
+#graphContainer * {
+    cursor: default !important;
+}
+
+.leftbcolumn {
+    width: 5%;
+    margin-left: calc(-5% - 8px);
+    height: min(90vh, 600px);
+}
+
+.gcolumn {
+    position: relative;
+    opacity: 0;
+    transform: scale(0.95);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    height: 600px;
+    background-color: white;
+    margin: 8px;
+    width: 100%; /* Slightly smaller divs for three items per row */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow for a cleaner look */
+    border-radius: 8px; /* Rounded corners */
+}
+
+.rightbcolumn {
+    float: left;
+    width: 5%;
+    margin-right: calc(-5% - 8px); 
+    height: min(90vh, 600px);
+    }
+
+ .graphSelector {
+  position: absolute;
+  top: 20px;   /* distance from top */
+  right: 20px; /* distance from right */
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  z-index: 1; /* ensures controls sit above the graph */
+  background-color: transparent;
+}
+
+.selectGraphButton {
+  padding: 10px 20px;
+  border: none;
+  background-color: rgb(85, 85, 255);
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: padding 0.1s ease;
+}
+
+.unSelectedGraphType {
+  padding: 8px 20px;
+}
+
+.selectGraphButton:hover {
+  background-color: rgb(45, 45, 255);
+}
+
+.left-select-button {
+  border-top-left-radius: 25px;
+  border-bottom-left-radius: 25px;
+}
+
+.right-select-button {
+  border-top-right-radius: 25px;
+  border-bottom-right-radius: 25px;
+}

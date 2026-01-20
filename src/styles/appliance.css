@@ -1,0 +1,65 @@
+.appliance {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+
+.appliance > .new {
+  font-size: 20px;
+  margin: 0px;
+}
+
+.appliance > p {
+  font-size: 16px;
+  margin: 5px;
+}
+
+.appliance > button {
+  background-color: #3D48BF;
+  border: none;
+  color: white;
+  padding: 10px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  border-radius: 8px;
+}
+
+.appliance > button:hover,
+.appliance > button:focus {
+  background-color: #2a8dff;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.appliance > button:disabled {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+.addApplianceButton {
+  background-color: #3D48BF;
+  border: none;
+  color: white;
+  padding: 10px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  border-radius: 8px;
+}
+
+.addApplianceButton:hover,
+.addApplianceButton:focus {
+  background-color: #2a8dff;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.addApplianceButton:disabled {
+    opacity: 0.6;
+    pointer-events: none;
+  }

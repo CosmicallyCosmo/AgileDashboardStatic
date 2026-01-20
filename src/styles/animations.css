@@ -1,0 +1,11 @@
+@keyframes easeIn {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.static {
+    transform: scale(0.95);
+    animation: easeIn 1s ease forwards;
+}
