@@ -1,6 +1,7 @@
 "use strict";
 
-export const regions = ["A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "P"] as const;
+export const tariffCodes = ["A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "P", "Go"] as const;
+export type TariffCode = typeof tariffCodes[number];
 
 export const regionMap: Record<string, string> = {
   A: "Eastern England",
@@ -19,17 +20,24 @@ export const regionMap: Record<string, string> = {
   P: "Northern Scotland",
 };
 
-export type RegionRow = {
+export interface Tariff {
+  tariff: TariffCode;
   valid_from: Date;
   valid_to: Date;
   value_inc_vat: number;
-};
+}
 
-export type ConsumptionRow = {
-  interval_start: Date;
-  interval_end: Date;
+export interface Consumption {
+  valid_from: Date;
+  valid_to: Date;
   consumption: number;
-};
+}
 
-export type Region = typeof regions[number];
+export interface Standing {
+  tariff: TariffCode;
+  valid_from: Date;
+  valid_to: Date;
+  value_inc_vat: number;
+}
+
 

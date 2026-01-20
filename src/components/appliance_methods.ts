@@ -1,13 +1,10 @@
 "use strict";
 
-declare const CookiesEuBanner: any;
-
 import { state } from "./state";
 import { getData } from "./data_methods";
-import { minMovingAverage } from "./utils";
 import { calculateApplianceCost, calculateApplianceDelayStart } from "./appliance_utils";
-import { validateInt, escapeHtml } from "./utils";
-import { closeModal } from "./modal_logic"; // shouldn't be handled here
+import { validateInt, escapeHtml, setLS, minMovingAverage } from "./utils";
+import { closeModal } from "./modal_logic";
 
 import type { Appliance } from "./appliance_utils";
 
@@ -93,9 +90,7 @@ export async function parseAppliance() {
 
   state.appliances.push(new_appliance);
 
-  new CookiesEuBanner(function () {
-    localStorage.setItem("appliances", JSON.stringify(state.appliances));
-  });
+  setLS("appliances", state.appliances);
 
   if (state.appliances.length > 7) {
     ((document.getElementById("newAppliance") as HTMLInputElement)!).disabled = true;
@@ -118,7 +113,7 @@ function removeAppliance(appliance: Appliance) {
   });
   var index = state.appliances.indexOf(appliance);
   state.appliances.splice(index, 1);
-  localStorage.setItem("appliances", JSON.stringify(state.appliances));
+  setLS("appliances", state.appliances);
   if (state.appliances.length < 8) {
     ((document.getElementById("newAppliance") as HTMLInputElement)!).disabled = false;
   }

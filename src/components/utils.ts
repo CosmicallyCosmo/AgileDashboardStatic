@@ -6,6 +6,14 @@ declare const CookiesEuBanner: any;
 
 let menuRotated = false;
 
+export type expansionMethod = "halfHourly" | "daily"
+export type PageContext = {
+  modifyButton: Function;
+  openModal: Function;
+  closeModal: Function;
+  settingsHandler: Function;
+};
+
 export interface TimeFormat {
   hours: number,
   minutes: number,
@@ -16,6 +24,23 @@ var entityMap = {
   '<': '&lt;',
   '>': '&gt;',
   '"': '&quot;',
+};
+
+export function setLS(key: string, value: any) {
+  new CookiesEuBanner(function () {
+    localStorage.setItem(key, JSON.stringify(value));
+  });
+}
+
+export function getLS(key: string) {
+  let value: any = localStorage.getItem(key);
+  if (value !== null)
+    value = JSON.parse(value);
+  return value;
+}
+
+export function rmLS(key: string) {
+  localStorage.removeItem(key);
 };
 
 export function escapeHtml(str: string) {
@@ -153,26 +178,29 @@ export function rotateMenuIcon(override: boolean | null = null) {
   document.getElementById("settingsMenu")!.style.transform = menuRotated ? "rotate(-90deg)" : "rotate(0deg)";
 }
 
-export function generateTimes(start: Date, end: Date, prices: any) {
+export function generateTimes(start: Date | null, end: Date, prices: any, method: expansionMethod = "halfHourly") {
   const intervals = [];
   prices = prices.reverse();
   for (let price of prices) {
 
     let valid_from = new Date(price.valid_from);
-    let valid_to = new Date(price.valid_to);
+    let valid_to = new Date(price.valid_to || end);
 
-    let intervalStart = valid_from < start ? start : valid_from;
+    let intervalStart = (start && valid_from < start) ? start : valid_from;
     let intervalEnd = valid_to > end ? end : valid_to;
 
     const current = new Date(intervalStart);
     while (current < intervalEnd) {
       const next = new Date(current);
-      next.setMinutes(next.getMinutes() + 30);
+      if (method == "halfHourly") {
+        next.setMinutes(next.getMinutes() + 30);
+      } else {
+        next.setDate(next.getDate() + 1);
+      }
 
       intervals.push({
         valid_from: new Date(current),
         valid_to: new Date(next),
-        value_exc_vat: price.value_exc_vat,
         value_inc_vat: price.value_inc_vat,
       });
       current.setTime(next.getTime());

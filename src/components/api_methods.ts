@@ -1,14 +1,10 @@
 "use strict";
 
-declare const CookiesEuBanner: any;
-
-import { escapeHtml } from "./utils.ts";
+import { state } from "./state.ts";
+import { escapeHtml, rmLS } from "./utils.ts";
 import { request, gql } from 'graphql-request';
 import type { Params, UserInfo, ObtainKrakenTokenResponse, MeterPoint } from './api_types.ts';
-// TODO: Needs to be a separation of universal methods from those that tie into the page structure, this doesn't belong here
-import { closeModal } from "./modal_logic.ts";
-
-export let userInfo: UserInfo = { accountNumber: undefined };
+import type { TariffCode } from "./db_types.ts";
 
 async function get(url: string, params?: Params, auth = false, userInfo?: UserInfo) {
   let now = new Date();
@@ -35,83 +31,17 @@ async function get(url: string, params?: Params, auth = false, userInfo?: UserIn
   };
 }
 
-export async function initialiseUser(accountNumber?: string, APIKey?: string, mpan?: string, serialNumber?: string, rememberMe = false) {
-  let errContainer = document.getElementById("settingsErr") as HTMLParagraphElement;
-  if (!accountNumber || !APIKey) {
-    let res: UserInfo = JSON.parse(localStorage.getItem("userInfo")!);
-    if (!res)
-      return false;
-    res.refreshToken!.expiry = new Date(res.refreshToken!.expiry);
-    res.token!.expiry = new Date(res.token!.expiry);
-    userInfo = res;
-    let isValid = await getToken();
-    if (!isValid) {
-      errContainer.innerText = "Unable to authenticate with provided details via the Octopus API - please double check!";
-      return isValid;
-    };
-    isValid = await getMeter(mpan, serialNumber);
-    if (!isValid) {
-      errContainer.innerText = "Unable to get meter details via the Octopus API - do you have a smart meter?";
-    };
-    return isValid;
-  };
-  userInfo.accountNumber = accountNumber;
-  let isValid = await getToken(APIKey);
-  if (!isValid) {
-    errContainer.innerText = "Unable to authenticate with provided details via the Octopus API - please double check!";
-    return isValid;
-  };
-  isValid = await getMeter(mpan, serialNumber);
-  if (!isValid) {
-    errContainer.innerText = "Unable to get meter details via the Octopus API - do you have a smart meter?";
-    return isValid;
-  };
-  if (isValid) {
-    if (rememberMe) {
-      new CookiesEuBanner(function () {
-        localStorage.setItem("userInfo", JSON.stringify(userInfo));
-      });
-    } else {
-      localStorage.removeItem("userInfo");
-    };
-  };
-  return isValid;
-}
-
-export async function storeUserData() {
-  const apiKey = escapeHtml(((document.getElementById("APIKey") as HTMLInputElement)!).value);
-  const accountNumber = escapeHtml(((document.getElementById("accountNumber") as HTMLInputElement)!).value);
-  const mpan = escapeHtml(((document.getElementById("mpan") as HTMLInputElement)!).value) || undefined;
-  const serialNumber = escapeHtml(((document.getElementById("serialNumber") as HTMLInputElement)!).value) || undefined;
-  const rememberMe = ((document.getElementById("rememberMe") as HTMLInputElement)!).checked;
-  let err = false;
-  if (apiKey.length === 0 || accountNumber.length === 0)
-    err = true;
-  let res = await initialiseUser(accountNumber, apiKey, mpan, serialNumber, rememberMe);
-  if (!res)
-    err = true;
-  if (err) {
-    document.getElementById("settingsErr")!.style.display = "block";
-    return;
-  }
-  document.getElementById("settingsErr")!.style.display = "none";
-  (document.getElementById("selectConsumption") as HTMLButtonElement).classList.remove("noHover");
-  (document.getElementById("selectCost") as HTMLButtonElement).classList.remove("noHover");
-  closeModal();
-  document.getElementById("manualDetailsEntry")!.style.display = "block";
-};
-
 export async function getToken(APIKey?: string) {
   let now = new Date();
   let authMethod;
   if (APIKey) {
     authMethod = { APIKey: APIKey };
   } else {
-    if (!userInfo.refreshToken || now.getTime() > (userInfo.refreshToken.expiry).getTime()) {  // Check if not preesnt or expired
-      localStorage.removeItem("userInfo");
+    if (!state.userInfo.refreshToken || now.getTime() > (state.userInfo.refreshToken.expiry).getTime()) {  // Check if not preesnt or expired
+      rmLS("userInfo");
       return false;
     };
-    authMethod = { refreshToken: userInfo.refreshToken!.token };
+    authMethod = { refreshToken: state.userInfo.refreshToken!.token };
   };
   const query = gql`
         mutation ObtainKrakenToken($authMethod: ObtainJSONWebTokenInput!) {
@@ -123,15 +53,17 @@ export async function getToken(APIKey?: string) {
             }
     `
   let variables = { authMethod };
+  console.log(variables);
   try {
     var res = ((await request<ObtainKrakenTokenResponse>('https://api.octopus.energy/v1/graphql/', query, variables)).obtainKrakenToken);
   } catch (error) {
+    console.log(error);
     return false;
   }
   let tokenExpiresIn = new Date();
   tokenExpiresIn.setMinutes(tokenExpiresIn.getMinutes() + 55); // 5 minute leeway;
-  userInfo.token = { token: res.token, expiry: tokenExpiresIn };
-  userInfo.refreshToken = { token: res.refreshToken, expiry: new Date(res.refreshExpiresIn * 1000) };
+  state.userInfo.token = { token: res.token, expiry: tokenExpiresIn };
+  state.userInfo.refreshToken = { token: res.refreshToken, expiry: new Date(res.refreshExpiresIn * 1000) };
   return true;
 }
 
@@ -149,9 +81,9 @@ export async function getGoData(period_from: Date, period_to: Date) {
 
 export async function getMeter(mpan?: string, serialNumber?: string) {
   if (!mpan || !serialNumber) {
-    const url = `https://api.octopus.energy/v1/accounts/${escapeHtml(userInfo.accountNumber!)}`;
+    const url = `https://api.octopus.energy/v1/accounts/${escapeHtml(state.userInfo.accountNumber!)}`;
     try {
-      let res = await get(url, undefined, true, userInfo) as MeterPoint;
+      let res = await get(url, undefined, true, state.userInfo) as MeterPoint;
       let property = res.properties.at(0);
       let electricity_meter_point = property?.electricity_meter_points.at(0);
       mpan = electricity_meter_point!.mpan;
@@ -161,21 +93,23 @@ export async function getMeter(mpan?: string, serialNumber?: string) {
       return false;
     };
   };
-  userInfo.meter = { mpan: mpan, serialNumber: serialNumber };
+  state.userInfo.meter = { mpan: mpan, serialNumber: serialNumber };
   return true;
 };
 
-export async function getStandingCharge(region: string, period_from: Date, period_to: Date) {
-  let url = `https://api.octopus.energy/v1/products/AGILE-24-10-01/electricity-tariffs/E-1R-AGILE-24-10-01-${region}/standing-charges?`
+export async function getStandingCharge(tariffCode: TariffCode, period_from: Date, period_to: Date) {
+  let url = `https://api.octopus.energy/v1/products/AGILE-24-10-01/electricity-tariffs/E-1R-AGILE-24-10-01-${tariffCode}/standing-charges?`
+  if (tariffCode == "Go")
+    url = "https://api.octopus.energy/v1/products/GO-VAR-22-10-14/electricity-tariffs/E-1R-GO-VAR-22-10-14-A/standing-charges?"
   url += new URLSearchParams({ page_size: "25000", period_from: period_from.toISOString(), period_to: period_to.toISOString(), _: (new Date()).toISOString() });
   return await get(url);
 }
 
 export async function getConsumptionData(period_from: Date, period_to: Date) {
-  if (!userInfo.meter) {
+  if (!state.userInfo.meter) {
     await getMeter(undefined, undefined);
   }
-  let url = `https://api.octopus.energy/v1/electricity-meter-points/${userInfo.meter!.mpan}/meters/${userInfo.meter!.serialNumber}/consumption?`;
+  let url = `https://api.octopus.energy/v1/electricity-meter-points/${state.userInfo.meter!.mpan}/meters/${state.userInfo.meter!.serialNumber}/consumption?`;
   url += new URLSearchParams({ page_size: "25000", period_from: period_from.toISOString(), period_to: period_to.toISOString(), _: (new Date()).toISOString() });
-  return await get(url, undefined, true, userInfo);
+  return await get(url, undefined, true, state.userInfo);
 }

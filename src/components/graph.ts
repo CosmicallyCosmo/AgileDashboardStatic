@@ -3,41 +3,16 @@
 declare const Plotly: any;
 
 import { normalize, getJetColor } from "./utils.ts";
+import { BarProfileSettings, GaugeProfileSettings } from "./graph_types.ts";
 
-type Range = [number, number];
-type GaugeId = "start-kpi" | "middle-kpi" | "end-kpi";
-export type GaugeProfile = "powerGauge" | "consumptionGauge" | "unitGauge" | "costGauge" | "totalCostGauge";
-export type BarProfile = "unitBar" | "consumptionBar" | "costBar";
-export type BarMode = "tariffBar" | "compareBar"
-type BarProfileSetting = { titlePrefix: string, colourRange: Range, dataRange: Range, suffix: string };
-type BarProfileTraces = { unitBar: boolean, standingBar: boolean, tariffTrace: boolean };
-type GaugeProfileSetting = { colourRange: Range, dataRange: Range, suffix: string, prefix: string };
-
-const GaugeProfileSettings: Record<GaugeProfile, GaugeProfileSetting> = {
-  unitGauge: { colourRange: [-20, 50], dataRange: [-5, 40], suffix: "p", prefix: "" },
-  powerGauge: { colourRange: [-500, 3500], dataRange: [0, 3000], suffix: "W", prefix: "" },
-  consumptionGauge: { colourRange: [-10, 40], dataRange: [0, 50], suffix: "kWh", prefix: "" },
-  costGauge: { colourRange: [-20, 40], dataRange: [-20, 60], suffix: "p", prefix: "" },
-  totalCostGauge: { colourRange: [-20, 700], dataRange: [-20, 600], suffix: "", prefix: "£" }
-};
-
-const BarProfileSettings: Record<BarProfile, BarProfileSetting> = {
-  unitBar: { titlePrefix: "Tariff data for ", colourRange: [-20, 50], dataRange: [-5, 40], suffix: "p" },
-  consumptionBar: { titlePrefix: "Consumption for ", colourRange: [-2, 2], dataRange: [0, 2], suffix: "kWh" },
-  costBar: { titlePrefix: "Cost for ", colourRange: [-10, 40], dataRange: [-10, 40], suffix: "p" },
-};
-
-const BarProfileTraces: Record<BarMode, BarProfileTraces> = {
-  tariffBar: { unitBar: true, standingBar: true, tariffTrace: false },
-  compareBar: { unitBar: true, standingBar: true, tariffTrace: true },
-};
+import type { BarProfile, BarMode, Range, BarProfileSetting, GaugeProfile, GaugeProfileSetting, GaugeId } from "./graph_types.ts";
 
 let curBarProfile: BarProfile = "unitBar";
 let curBarMode: BarMode = "tariffBar";
 
-function generateTimes() {
+function generateTimes(min_offset: number = 0) {
   let times = [];
-  let start = new Date(1970, 0, 1, 0, 0, 0, 0);
+  let start = new Date(1970, 0, 1, 0, min_offset, 0, 0);
   for (let i = 0; i < 48; i++) {
     const time = new Date(start.getTime() + i * 30 * 60 * 1000);
     times.push(time);
@@ -52,35 +27,20 @@ export function newBar(
   colourRange: Range,
   dataRange: Range,
   suffix: string,
+  standingCharge: number,
+  altTariffData: number[],
   barMode: BarMode = "tariffBar"
 ) {
   y.concat(Array(Math.max(48 - y.length, 0)).fill(0));
-
   curBarMode = barMode;
   let traces: any = [];
 
-  if (curBarMode == "compareBar") {
-    let stepLine = {
-      type: 'scatter',
-      mode: 'lines',
-      name: 'Threshold',
-      visible: false,
-      x: generateTimes(),
-      y: new Array(48).fill(0),
-      line: {
-        shape: 'hv',
-        dash: 'dash',
-        width: 2,
-        color: 'purple'
-      }
-    };
-    traces.push(stepLine);
-  };
-
-  var standingCharge = {
+  var standingChargeTrace = {
     x: generateTimes(),
-    y: (new Array(48).fill(0)),
+    y: (new Array(48).fill(standingCharge)),
     type: 'bar',
+    name: "Standing Charge",
+    visible: (curBarProfile == "costBar"),
     marker: {
       color: 'purple',          // base fill color
       pattern: {
@@ -90,12 +50,13 @@ export function newBar(
     hovertemplate: 'Standing charge %{y}<extra></extra>'
   }
 
-  traces.push(standingCharge);
+  traces.push(standingChargeTrace);
 
   var tariffData = {
     x: generateTimes(),
     y: y,
     type: 'bar',
+    name: "Agile Octopus",
     marker: {
       color: y,
       colorscale: 'Jet',
@@ -107,10 +68,28 @@ export function newBar(
 
   traces.push(tariffData);
 
+  if (curBarMode == "compareBar") {
+    let stepLine = {
+      type: 'scatter',
+      mode: 'lines',
+      name: 'Octopus Go',
+      visible: (curBarProfile == "unitBar" || curBarProfile == "costBar"),
+      x: generateTimes(-15),
+      y: altTariffData.concat(Array(Math.max(48 - altTariffData.length, 0)).fill(0)),
+      line: {
+        shape: 'hv',
+        dash: 'dash',
+        width: 3,
+        color: 'black'
+      }
+    };
+    traces.push(stepLine);
+  };
+
   let layout = {
     dragmode: false,  // Disable zoom/pan
     autosize: true,
-    showlegend: false,
+    showlegend: (barMode == "compareBar"),
     xaxis: { tickformat: '%H:%M' },
     yaxis: { range: dataRange, showgrid: false, linecolor: 'lightgray', linewidth: 1, showticklabels: true, ticksuffix: suffix },
     paper_bgcolor: "rgba(0,0,0,0)",
@@ -153,22 +132,14 @@ export function updateBar(
   standingCharge = 0,
   altTariffData: number[] = [],
   barMode: BarMode = "tariffBar") {
-
   const { titlePrefix, colourRange, dataRange, suffix }: BarProfileSetting = BarProfileSettings[type];
   if (initial) {
-    newBar(x, y, titlePrefix, colourRange, dataRange, suffix, barMode);
+    newBar(x, y, titlePrefix, colourRange, dataRange, suffix, standingCharge, altTariffData, barMode);
     return;
   };
   y.concat(Array(Math.max(48 - y.length, 0)).fill(0))
 
   let traces: any = [];
-
-  if (curBarMode == "compareBar") {
-    var altTariffArr = {
-      y: altTariffData.concat(Array(Math.max(48 - altTariffData.length, 0)).fill(0)),
-    };
-    traces.push(altTariffArr);
-  };
 
   var standingChargeArr = {
     y: new Array(48).fill(standingCharge),
@@ -182,6 +153,13 @@ export function updateBar(
   };
 
   traces.push(tariffData);
+
+  if (curBarMode == "compareBar") {
+    var altTariffArr = {
+      y: altTariffData.concat(Array(Math.max(48 - altTariffData.length, 0)).fill(0)),
+    };
+    traces.push(altTariffArr);
+  };
 
   let animationTime = 150;
   if (curBarProfile != type) {
@@ -213,9 +191,13 @@ export function updateBar(
 
   if (curBarMode == "compareBar") {
     Plotly.restyle('graphContainer', {
-      visible: (curBarProfile == "unitBar")
-    }, [0]); // other tariff  }
+      visible: (curBarProfile == "unitBar" || curBarProfile == "costBar")
+    }, [2]); // other tariff  };
   };
+  console.log((curBarProfile == "unitBar" || curBarProfile == "costBar"));
+  Plotly.restyle('graphContainer', {
+    visible: (curBarProfile == "unitBar" || curBarProfile == "costBar")
+  }, [0]); // standing charge  }
 };
 
 export function newKPI(

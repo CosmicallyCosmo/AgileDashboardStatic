@@ -1,14 +1,17 @@
 "use strict";
 
-import type { Region } from "./db_types";
+import type { TariffCode } from "./db_types";
 import type { Appliance } from "./appliance_utils";
+import type { UserInfo } from "./api_types";
 
 type State = {
-  region: Region;
+  region: TariffCode;
   nextAvailable: Boolean;
   appliances: Appliance[];
   isMobile: Boolean;
   openModal: string;
+  offset: number;
+  userInfo: UserInfo;
 };
 
 const _state: State = {
@@ -17,6 +20,8 @@ const _state: State = {
   appliances: [{ id: 'default', name: 'Washing machine', power: 2000, runTime: { hours: 2, minutes: 30 } }],
   isMobile: false,
   openModal: "",
+  offset: 0,
+  userInfo: { accountNumber: undefined },
 };
 
 export const state = new Proxy(_state, {
@@ -24,7 +29,7 @@ export const state = new Proxy(_state, {
     return target[prop];
   },
   set(target, prop: keyof State, value) {
-    target[prop] = value;
+    (target as any)[prop] = value;
     return true;
   },
 });

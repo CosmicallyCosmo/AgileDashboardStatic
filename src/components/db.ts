@@ -1,37 +1,31 @@
+"use strict";
+
 import { Dexie } from 'dexie';
-import { regions } from './db_types';
 
 import type { Table } from 'dexie';
-import type { ConsumptionRow, RegionRow, Region } from './db_types';
+import type { Tariff, Consumption, Standing } from './db_types';
+
+// TODO: Use "virtual tables" instead, define a tariff table, consumption table, and possibly standing table
+// Put all data into that with a key (like region or tariff name) that can be used to sort the data
+// Fixes issue of any number of comparison tariffs being possible
 
 
-class TypedDB extends Dexie {
-  consumption!: Table<ConsumptionRow, number>;
+class AppDB extends Dexie {
+  tariff!: Table<Tariff, number>;
+  consumption!: Table<Consumption, number>;
+  standing!: Table<Standing, number>;
 
   constructor() {
-    super("userData");
+    super('user');
 
-    const schema = "valid_from,valid_to,value_inc_vat";
-    const storesDef: Record<string, string> = Object.fromEntries(
-      regions.map((name) => [name, schema])
-    );
-    storesDef.consumption = "interval_start,interval_end,consumption";
-
-    this.version(1).stores(storesDef);
+    this.version(1).stores({
+      tariff: '[tariff+valid_from]',
+      consumption: 'valid_from',
+      standing: '[tariff+valid_from]'
+    });
   }
 }
 
-type RegionTables = {
-  [K in Region]: Table<RegionRow, number>;
-};
+export const db = new AppDB();
 
-interface TypedDB extends RegionTables { }
 
-export const db = new TypedDB();
-
-const schema = "valid_from,valid_to,value_inc_vat"
-let storesDef = Object.fromEntries(
-  regions.map(name => [name, schema])
-);
-storesDef.consumption = "interval_start,interval_end,consumption";
-db.version(1).stores(storesDef);

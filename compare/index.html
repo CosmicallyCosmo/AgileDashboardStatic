@@ -8,12 +8,11 @@
   </head>
   <body>
     <%- header %>
-    <div>
-      <div class="titlecol">
-        <div><h2 class="quicksand-txt">Daily Agile Octopus prices</h2></div>
-        <div><p>.</p></div>
-        <div><p>Data is currently for the <b><span id="selectedRegion">Eastern England</span></b> region on the <b><span id="productCode">AGILE-24-10-01</span></b> version of the agile tariff. Update your details and add your API key to view your usage in the settings menu!</p></div>
-      </div>
+    <div class="titlecol">
+      <div><h2 class="quicksand-txt">Compare Octopus tariffs</h2></div>
+      <div><p>Compare the cost of other tariffs versus being on Agile using your usage data.</p></div>
+      <div>
+        <p>Data is currently for the <b><span id="selectedRegion">Eastern England</span></b> region on the <b><span id="productCode">AGILE-24-10-01</span></b> version of the agile tariff. Update your details and add your API key to view your usage in the settings menu!</p></div>
     </div>
     <div style="display: flex;">
       <div class="leftbcolumn navbutton hc" id="leftbcolumn"><button id="left" class="button">&lt;</button></div>
@@ -32,74 +31,17 @@
       <div class="rightbcolumn navbutton hc" id="rightbcolumn"><button id="right" class="button" disabled>&gt;</button></div>
     </div>
     <div id="floatingControls" class="floatingControls"><div id="buttonControls"></div></div>
+    <div class="titlecol">
+    <p>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</p>
+    </div>
     <div class="blockGrid" id="dynamicBlockGrid">
-      <div class="appliance static">
-        <p class="quicksand-txt new hm hc"><b>New!</b><p>
-        <p class="quicksand-txt">Add a widget to view the cheapest time to run various household appliances.</p>
-        <button id="newAppliance">Add new appliance</button>
-      </div>
       <div class="static" id="start-kpi"></div>
       <div class="static" id="middle-kpi"></div>
+      <div class="static" id="alt-start-kpi"></div>
       <div class="static" id="end-kpi"></div>
-    </div>
-    <div id="applianceModal" class="modal">
-      <div class="modal-content modalSmall">
-        <span class="close closeModal">&times;</span>
-        <!-- Would be nice to have some easy default values for common appliances -->
-        <label for="appName" class="quicksand-txt">Appliance name </label><br>
-        <input type="text" id="appName" name="appName" value="Tumble dryer" class="quicksand-txt"><br>
-        <label for="appPower" class="quicksand-txt">Appliance average power utilisation (W)</label><br>
-        <input type="number" id="appPower" name="appPower" class="quicksand-txt" value="2500" min="0" max="20000" step="500"/><br>
-        <label for="appRunHours" class="quicksand-txt">Appliance run time (hours)</label><br>
-        <input type="number" id="appRunHours" name="appRunHours" class="quicksand-txt" value="2" min="0" max="16" step="1"/><br>
-        <label for="appRunMinutes" class="quicksand-txt">Appliance run time (minutes)</label><br>
-        <input type="number" id="appRunMinutes" name="appRunMinutes" class="quicksand-txt" value="0" min="0" max="59" step="15"/><br>
-        <input type="button" id="addApplianceButton" class = "addApplianceButton quicksand-txt" value="Add appliance">
-        <p style="color: red; display: none" id="applianceErr">Error: invalid form parameters - please double check!</p>
-      </div>
-    </div>
-    <div class='faq'>
-      <input id='faq-a' type='checkbox'>
-      <label for='faq-a'>
-        <p class="faq-heading quicksand-txt">What is Agile Octopus?</p>
-        <div class='faq-arrow'></div>
-          <p class="faq-text">Agile Octopus is an innovative smart tariff that features half hourly pricing directly tied to the wholesale energy rates. For more information and to sign up, go to <a href="https://octopus.energy/smart/agile/">Octopus Energy</a>.</p>
-      </label>
-      <input id='faq-b' type='checkbox'>
-      <label for='faq-b'>
-        <p class="faq-heading quicksand-txt">How do I know if agile is right for me?</p>
-        <div class='faq-arrow'></div>
-          <p class="faq-text">You should start by using our site to see if the average pricing is lower than your regular tariff, and if you're able to shift your electricity usage to times when the prices are lower - commonly at night. Octopus energy also offer a variety of comparsion tools and we hope to expand our functionality in the future!</p>
-      </label>
-      <input id='faq-c' type='checkbox'>
-      <label for='faq-c'>
-        <p class="faq-heading quicksand-txt">Why do the rates only go to tomorrow?</p>
-        <div class='faq-arrow'></div>
-          <p class="faq-text">While there aren't any official metrics published by Octopus Energy beyond the next day, weather patterns and the carbon intensity of the grid sometimes correlate with prices. <a href="https://grid.iamkate.com">This grid analysis</a> site can be used to see the current state of the UK electricity grid.</p>
-      </label>
-      <input id='faq-d' type='checkbox'>
-      <label for='faq-d'>
-        <p class="faq-heading quicksand-txt">When do tomorrow's prices release?</p>
-        <div class='faq-arrow'></div>
-          <p class="faq-text">The next day's prices usually release at 16:00. The website will automatically sync at that time to serve you the most up to date prices.</p>
-      </label>
-      <input id='faq-e' type='checkbox'>
-      <label for='faq-e'>
-        <p class="faq-heading quicksand-txt">I love the site - how can I donate?</p>
-        <div class='faq-arrow'></div>
-          <p class="faq-text">Thanks! We accept donations to cover the cost of hosting, please take a look here to see how to <a href="https://ko-fi.com/agiledashboard"> donate</a>.</p>
-      </label>
+      <div class="static" id="alt-end-kpi"></div>
     </div>
     <template id="widgetTemplate">
-      <div data-type="applianceWidget" class="gridDynamicItem gridHeight" style="display: block;">
-        <span class="close">&times;</span>
-        <p data-field="name" class="quicksand-txt title"></p> <!-- Appliance name -->
-        <p class="quicksand-txt title"><span data-field="power"></span>W</p> <!-- Appliance power -->
-        <p class="quicksand-txt">Start at <b><span data-field="startAt"></span></b></p> <!-- Appliance start time -->
-        <p class="quicksand-txt">(A delay start of <span data-field="delayStart"></span>)</p> <!-- Appliance delay start -->
-        <p class="quicksand-txt">For <span data-field="hours"></span> hours and <span data-field="minutes"></span> minutes</p> <!-- Appliance run time -->
-        <p class="quicksand-txt">At a cost of <b><span data-field="cost"></span>p</b>&nbsp;<span class="material-symbols-outlined warning-span tooltip" style="display: none;" data-field="warning">warning<span class="tooltiptext quicksand-txt">Tomorrow's pricing hasn't<br>been released yet.<br>Check back at 16:00<br>for an updated start time!</span></span></p> <!-- Appliance cost -->
-      </div>
     </template>
     <%- footer %>
   </body>
