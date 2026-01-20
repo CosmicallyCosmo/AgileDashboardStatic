@@ -9,6 +9,14 @@ const header = readFileSync(resolve(__dirname, 'src/templates/header.html'), 'ut
 const footer = readFileSync(resolve(__dirname, 'src/templates/footer.html'), 'utf-8');
 
 export default defineConfig({
+  build: {
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, "index.html"),
+        compare: resolve(__dirname, "compare/index.html"),
+      },
+    },
+  },
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',
@@ -30,8 +38,8 @@ export default defineConfig({
         },
         {
           entry: '/src/compare.ts',
-          filename: 'compare/index.html',
-          template: 'compare/index.html',
+          filename: '/compare/index.html',
+          template: '/compare/index.html',
           injectOptions: {
             data: {
               head: head,
